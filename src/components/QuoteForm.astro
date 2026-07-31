@@ -1,0 +1,355 @@
+---
+import { services } from '../data/services';
+import { areas } from '../data/areas';
+import { site } from '../data/site';
+
+/**
+ * Quote request form.
+ *
+ * Posts JSON to the Lambda Function URL provisioned by infra/site-stack.yaml,
+ * which forwards it to Martin over SES. No database, no third-party service.
+ *
+ * PUBLIC_FORM_ENDPOINT is read at build time. Until AWS is provisioned it is
+ * unset, and the component renders call/email actions instead of a form that
+ * could not submit — better than a form that silently fails.
+ */
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '';
+const configured = endpoint.startsWith('https://');
+---
+
+{
+  configured ? (
+    <form class="quote-form" data-endpoint={endpoint} novalidate>
+      <div class="row">
+        <label class="field">
+          <span class="label">Your name <em>*</em></span>
+          <input type="text" name="name" required autocomplete="name" maxlength="120" />
+        </label>
+
+        <label class="field">
+          <span class="label">Phone <em>*</em></span>
+          <input type="tel" name="phone" required autocomplete="tel" maxlength="40" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="label">Email</span>
+        <input type="email" name="email" autocomplete="email" maxlength="160" />
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span class="label">What do you need done?</span>
+          <select name="service">
+            <option value="">Select a service</option>
+            {services.map((s) => (
+              <option value={s.name}>{s.name}</option>
+            ))}
+            <option value="Other">Something else</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="label">Town</span>
+          <select name="city">
+            <option value="">Select your town</option>
+            {areas.map((a) => (
+              <option value={a.name}>{a.name}</option>
+            ))}
+            <option value="Other">Not listed</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="label">About the project <em>*</em></span>
+        <textarea
+          name="message"
+          rows="5"
+          required
+          maxlength="3000"
+          placeholder="Rooms involved, rough size, what is on the floor now, and any target dates."
+        />
+      </label>
+
+      {/* Honeypot: invisible to people, irresistible to bots. */}
+      <div class="hp" aria-hidden="true">
+        <label>
+          Company website
+          <input type="text" name="website" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+      <input type="hidden" name="loadedAt" value="" />
+
+      <button type="submit" class="submit">
+        <span class="submit-label">Send request</span>
+      </button>
+
+      <p class="status" role="status" aria-live="polite"></p>
+
+      <p class="small">
+        Prefer to talk? Call {site.contactName} on{' '}
+        <a href={`tel:${site.phoneHref}`}>{site.phone}</a>.
+      </p>
+
+      <noscript>
+        <p class="small">
+          This form needs JavaScript. Please email{' '}
+          <a href={`mailto:${site.email}`}>{site.email}</a> or call{' '}
+          <a href={`tel:${site.phoneHref}`}>{site.phone}</a>.
+        </p>
+      </noscript>
+    </form>
+  ) : (
+    <div class="fallback">
+      <p class="fallback-text">
+        Contact {site.contactName} directly — you will speak to the person who
+        will actually look at the job.
+      </p>
+      <a class="fallback-action" href={`tel:${site.phoneHref}`}>
+        <span class="label">Call {site.contactName}</span>
+        <span class="value">{site.phone}</span>
+      </a>
+      <a class="fallback-action" href={`mailto:${site.email}`}>
+        <span class="label">Email for an estimate</span>
+        <span class="value value-email">{site.email}</span>
+      </a>
+    </div>
+  )
+}
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('.quote-form');
+
+  if (form) {
+    const endpoint = form.dataset.endpoint!;
+    const status = form.querySelector<HTMLParagraphElement>('.status')!;
+    const button = form.querySelector<HTMLButtonElement>('.submit')!;
+    const label = form.querySelector<HTMLSpanElement>('.submit-label')!;
+
+    // Stamped on load. The handler rejects submissions that arrive within a
+    // couple of seconds, which no human can manage but scripts routinely do.
+    const loadedAt = form.querySelector<HTMLInputElement>('input[name="loadedAt"]')!;
+    loadedAt.value = String(Date.now());
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) return;
+
+      button.disabled = true;
+      label.textContent = 'Sending…';
+      status.textContent = '';
+      status.classList.remove('is-error', 'is-ok');
+
+      try {
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error(`Request failed with ${res.status}`);
+
+        form.reset();
+        status.textContent =
+          'Thanks — your request is on its way. Martin will be in touch shortly.';
+        status.classList.add('is-ok');
+        label.textContent = 'Sent';
+      } catch {
+        status.textContent =
+          'Something went wrong sending that. Please call (630) 597-8138 or email star4constructionteam@gmail.com.';
+        status.classList.add('is-error');
+        button.disabled = false;
+        label.textContent = 'Send request';
+      }
+    });
+  }
+</script>
+
+<style>
+  .quote-form {
+    display: grid;
+    gap: 1.25rem;
+    background: var(--cream);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 1.25rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--text-on-light-muted);
+  }
+
+  .label em {
+    font-style: normal;
+    color: var(--accent-text);
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--rule-on-light);
+    background: #fff;
+    font-size: 0.9375rem;
+    color: var(--text-on-light);
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--terracotta);
+  }
+
+  /* Off-screen rather than display:none — some bots skip hidden inputs. */
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .submit {
+    justify-self: start;
+    background: var(--terracotta);
+    color: var(--cream);
+    padding: 0.95rem 2rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .submit:hover:not(:disabled),
+  .submit:focus-visible:not(:disabled) {
+    background: #c25f2c;
+  }
+
+  .submit:disabled {
+    opacity: 0.65;
+    cursor: default;
+  }
+
+  .status:empty {
+    display: none;
+  }
+
+  .status {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid currentColor;
+  }
+
+  .status.is-ok {
+    color: #2f6b45;
+    background: rgba(47, 107, 69, 0.08);
+  }
+
+  .status.is-error {
+    color: #a33417;
+    background: rgba(163, 52, 23, 0.08);
+  }
+
+  .small {
+    font-size: var(--fs-small);
+    color: var(--text-on-light-muted);
+  }
+
+  .small a {
+    color: var(--accent-text);
+    font-weight: 700;
+    border-bottom: 1px solid currentColor;
+  }
+
+  /* --- Fallback (before the AWS endpoint exists) ------------------------- */
+  .fallback {
+    display: grid;
+    gap: 1px;
+    background: var(--cream);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .fallback-text {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .fallback-action {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .fallback-action:first-of-type {
+    background: var(--terracotta);
+    color: var(--cream);
+    border-color: var(--terracotta);
+  }
+
+  .fallback-action:hover,
+  .fallback-action:focus-visible {
+    background: rgba(20, 32, 28, 0.04);
+  }
+
+  .fallback-action:first-of-type:hover,
+  .fallback-action:first-of-type:focus-visible {
+    background: #c25f2c;
+  }
+
+  /* These reuse the .label class from the form above, whose own colour rule
+     beats anything inherited from the anchor — so the colour has to be set
+     here explicitly, or the label renders muted grey on the terracotta fill. */
+  .fallback-action .label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+  }
+
+  .fallback-action .value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-on-light);
+  }
+
+  .fallback-action:first-of-type .label,
+  .fallback-action:first-of-type .value {
+    color: var(--cream);
+  }
+
+  .value-email {
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+  }
+</style>

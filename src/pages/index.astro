@@ -1,0 +1,307 @@
+---
+import { getPublishedProjects } from '../lib/projects';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ContactStrip from '../components/ContactStrip.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ServiceCards from '../components/ServiceCards.astro';
+import MoreServicesBand from '../components/MoreServicesBand.astro';
+import AreaPanel from '../components/AreaPanel.astro';
+import NumberedList from '../components/NumberedList.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
+import ProcessSteps from '../components/ProcessSteps.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import ContactButtons from '../components/ContactButtons.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+import { faqs } from '../data/faqs';
+import { faqSchema } from '../lib/schema';
+
+const projects = await getPublishedProjects();
+
+const differentiators = [
+  {
+    title: `Talk directly with ${site.contactName}`,
+    text: 'One direct point of contact from the first conversation through the next step.',
+  },
+  {
+    title: 'Specialized finish work',
+    text: 'Focused experience with floors, stairways, railings, and the details that complete a room.',
+  },
+  {
+    title: 'Local service',
+    text: 'Based in Willow Springs and working across the western and southwest suburbs.',
+  },
+];
+---
+
+<BaseLayout
+  title="Flooring & Stair Contractor | Chicago SW Suburbs"
+  description="Hardwood floor installation, sanding and refinishing, custom stairs, railings and trim across Chicago's western and southwest suburbs. Call (630) 597-8138."
+  canonical="/"
+  schemas={[faqSchema(faqs)]}
+>
+  <Hero />
+  <ContactStrip />
+
+  {/* --- Services ---------------------------------------------------------- */}
+  <section class="section services" id="services">
+    <div class="frame">
+      <SectionHead
+        label="Core services"
+        surface="light"
+        lede="Floors and stairways shape how a home looks and feels. Star 4 Construction focuses on the installation and finish details that make the whole space feel complete."
+      >
+        Craftsmanship you can see under every step.
+      </SectionHead>
+
+      {/* The design shows three panels. The remaining services are reachable
+          from this link, the footer, and every area page. */}
+      <ServiceCards limit={3} />
+
+      <a class="services-link" href="/services/">
+        All five services <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+    <div class="frame band-wrap">
+      <MoreServicesBand />
+    </div>
+  </section>
+
+  {/* --- Service areas ----------------------------------------------------- */}
+  <section class="section areas" id="areas">
+    <div class="frame areas-grid">
+      <div>
+        <SectionHead label="Where we work" class="areas-head">
+          Serving Chicago's western and southwest suburbs.
+        </SectionHead>
+
+        <p class="areas-text">
+          Based in Willow Springs, Star 4 Construction works with homeowners
+          across the surrounding area on flooring, stairs, railings, and detailed
+          home-improvement projects.
+        </p>
+
+        <a class="areas-link" href="/areas/">See every area we cover</a>
+      </div>
+
+      <AreaPanel />
+    </div>
+  </section>
+
+  {/* --- Why us ------------------------------------------------------------ */}
+  <section class="section why">
+    <div class="frame why-grid">
+      <SectionHead label="A simpler way to start" surface="light" class="why-head">
+        Clear contact. Focused work. No runaround.
+      </SectionHead>
+
+      <NumberedList items={differentiators} />
+    </div>
+  </section>
+
+  {/* --- Selected work ----------------------------------------------------- */}
+  <section class="section work" id="work">
+    <div class="frame">
+      <SectionHead
+        label="Selected work"
+        lede="Flooring, stair, and railing work completed for homes in the Chicago area."
+      >
+        Built details. Finished spaces.
+      </SectionHead>
+
+      {
+        projects.length > 0 ? (
+          <>
+            <ProjectGrid projects={projects} limit={5} />
+            <a class="work-link" href="/projects/">
+              View all projects <span aria-hidden="true">↗</span>
+            </a>
+          </>
+        ) : (
+          <p class="work-empty">
+            Project photographs are being added. Call {site.contactName} at{' '}
+            <a href={`tel:${site.phoneHref}`}>{site.phone}</a> to discuss recent work.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {/* --- Process ----------------------------------------------------------- */}
+  <section class="section process" id="process">
+    <div class="frame">
+      <SectionHead
+        label="How it works"
+        surface="light"
+        variant="indented"
+        lede="No long intake. No complicated steps. Start with a call or email."
+      >
+        Three straightforward steps.
+      </SectionHead>
+
+      <ProcessSteps />
+      <ContactButtons tone="on-light" class="process-buttons" />
+    </div>
+  </section>
+
+  {/* --- FAQ --------------------------------------------------------------- */}
+  <section class="section faq" id="faq">
+    <div class="frame faq-grid">
+      <SectionHead label="Good to know" surface="light" class="faq-head">
+        Common questions, simple answers.
+      </SectionHead>
+
+      <FaqAccordion items={faqs} />
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  /* --- Services ---------------------------------------------------------- */
+  .services {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .services-link {
+    display: inline-block;
+    margin-top: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+    font-size: var(--fs-small);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.35rem;
+  }
+
+  .band-wrap {
+    margin-top: clamp(2rem, 1rem + 2.5vw, 3rem);
+  }
+
+  /* --- Areas ------------------------------------------------------------- */
+  .areas {
+    background: var(--green-dark);
+    color: var(--text-on-dark);
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .areas-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .areas-grid :global(.areas-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 2rem;
+  }
+
+  .areas-text {
+    color: var(--text-on-dark-muted);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    max-width: 44ch;
+  }
+
+  .areas-link {
+    display: inline-block;
+    margin-top: 1.75rem;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    color: var(--orange);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.3rem;
+  }
+
+  /* --- Why --------------------------------------------------------------- */
+  .why {
+    /* The diagonal tan wedge from the design. */
+    background:
+      linear-gradient(102deg, var(--tan) 0%, var(--tan) 38%, var(--sage-light) 38.2%, var(--sage-light) 100%);
+    color: var(--text-on-light);
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .why-grid :global(.why-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+
+  /* --- Work -------------------------------------------------------------- */
+  .work {
+    background: var(--ink);
+    color: var(--text-on-dark);
+  }
+
+  .work-link {
+    display: inline-block;
+    margin-top: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+    font-size: var(--fs-small);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--orange);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.35rem;
+  }
+
+  .work-empty {
+    color: var(--text-on-dark-muted);
+  }
+  .work-empty a {
+    color: var(--orange);
+  }
+
+  /* --- Process ----------------------------------------------------------- */
+  .process {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .process :global(.process-buttons) {
+    margin-top: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+    max-width: 36rem;
+  }
+
+  /* --- FAQ --------------------------------------------------------------- */
+  .faq {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .faq-grid :global(.faq-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 60rem) {
+    .areas-grid,
+    .why-grid,
+    .faq-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .why {
+      background: linear-gradient(170deg, var(--tan) 0%, var(--tan) 22%, var(--sage-light) 22.2%);
+    }
+  }
+</style>

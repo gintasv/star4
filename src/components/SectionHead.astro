@@ -1,0 +1,91 @@
+---
+import SectionLabel from './SectionLabel.astro';
+
+/**
+ * The recurring section header: micro-label and a large heading on the left,
+ * with a short paragraph set low and to the right. Used by almost every
+ * section on the site.
+ */
+interface Props {
+  label: string;
+  /** Rendered as an h2 by default; the page can override for hierarchy. */
+  as?: 'h1' | 'h2';
+  /** The surface this section sits on. Drives the accent colour — see
+      SectionLabel for why this names a surface rather than a colour. */
+  surface?: 'dark' | 'light';
+  /** Optional supporting paragraph shown in the right column. */
+  lede?: string;
+  /** Pushes the heading right and drops the label down, as in the design's
+      "Three straightforward steps" block. */
+  variant?: 'default' | 'indented';
+  class?: string;
+}
+
+const {
+  label,
+  as: Tag = 'h2',
+  surface = 'dark',
+  lede,
+  variant = 'default',
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={['section-head', `variant-${variant}`, className]}>
+  <div class="head-main">
+    <SectionLabel text={label} surface={surface} class="head-label" />
+    <Tag class="head-title"><slot /></Tag>
+  </div>
+  {lede && <p class="head-lede">{lede}</p>}
+</div>
+
+<style>
+  .section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 0.5rem + 4vw, 5rem);
+    align-items: end;
+    margin-bottom: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+  }
+
+  .head-title {
+    font-size: var(--fs-h2);
+  }
+
+  .head-lede {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    max-width: 42ch;
+    /* Sits on the heading's baseline block rather than its cap height. */
+    padding-bottom: 0.4rem;
+  }
+
+  /* Indented variant: label drops to sit beside the last heading line. */
+  .variant-indented .head-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0 clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  }
+
+  .variant-indented :global(.head-label) {
+    margin-bottom: 0.75rem;
+  }
+
+  @media (max-width: 55rem) {
+    .section-head {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      gap: 1.5rem;
+    }
+
+    .variant-indented .head-main {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .variant-indented :global(.head-label) {
+      order: -1;
+      margin-bottom: 1.5rem;
+    }
+  }
+</style>

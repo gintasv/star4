@@ -1,0 +1,254 @@
+---
+import { render } from 'astro:content';
+import { getPublishedProjects } from '../../lib/projects';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getService } from '../../data/services';
+import { getArea } from '../../data/areas';
+
+export async function getStaticPaths() {
+  const projects = await getPublishedProjects();
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project, all: projects },
+  }));
+}
+
+const { project, all } = Astro.props;
+const { Content } = await render(project);
+
+const service = project.data.service ? getService(project.data.service) : undefined;
+const area = project.data.area ? getArea(project.data.area) : undefined;
+
+const more = all.filter((p) => p.id !== project.id).slice(0, 3);
+
+const origin = Astro.site?.origin ?? 'https://star4construction.com';
+
+// ImageObject gives the photographs a chance in image search, which matters
+// for a trade where people search visually.
+const imageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageObject',
+  contentUrl: new URL(project.data.cover.src, origin).href,
+  caption: project.data.coverAlt,
+  creditText: 'Star 4 Construction',
+  representativeOfPage: true,
+};
+
+const dateLabel = project.data.date?.toLocaleDateString('en-US', {
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<BaseLayout
+  title={`${project.data.title} | Star 4 Construction`}
+  description={project.data.metaDescription ?? project.data.summary}
+  canonical={`/projects/${project.id}/`}
+  ogType="article"
+  breadcrumbs={[
+    { name: 'Work', href: '/projects/' },
+    { name: project.data.title, href: `/projects/${project.id}/` },
+  ]}
+  schemas={[imageSchema]}
+>
+  <PageHeader
+    label={project.data.category}
+    title={project.data.title}
+    lede={project.data.summary}
+    breadcrumbs={[
+      { name: 'Work', href: '/projects/' },
+      { name: project.data.title, href: `/projects/${project.id}/` },
+    ]}
+  />
+
+  <article class="section detail">
+    <div class="frame">
+      <Image
+        src={project.data.cover}
+        alt={project.data.coverAlt}
+        widths={[640, 960, 1280]}
+        sizes="(max-width: 62rem) 100vw, 1020px"
+        loading="eager"
+        fetchpriority="high"
+        class="cover"
+      />
+
+      <div class="detail-grid">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <aside class="meta">
+          <dl>
+            <div>
+              <dt>Category</dt>
+              <dd>{project.data.category}</dd>
+            </div>
+            {
+              project.data.date && (
+                <div>
+                  <dt>Completed</dt>
+                  <dd>
+                    <time datetime={project.data.date.toISOString()}>{dateLabel}</time>
+                  </dd>
+                </div>
+              )
+            }
+            {
+              service && (
+                <div>
+                  <dt>Service</dt>
+                  <dd>
+                    <a href={`/services/${service.slug}/`}>{service.name}</a>
+                  </dd>
+                </div>
+              )
+            }
+            {
+              area && (
+                <div>
+                  <dt>Location</dt>
+                  <dd>
+                    <a href={`/areas/${area.slug}/`}>{area.name}, IL</a>
+                  </dd>
+                </div>
+              )
+            }
+          </dl>
+        </aside>
+      </div>
+
+      {
+        project.data.gallery.length > 0 && (
+          <ul class="gallery">
+            {project.data.gallery.map((shot) => (
+              <li>
+                <Image
+                  src={shot.src}
+                  alt={shot.alt}
+                  widths={[480, 720, 1020]}
+                  sizes="(max-width: 48rem) 100vw, 50vw"
+                  loading="lazy"
+                />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    more.length > 0 && (
+      <section class="section more">
+        <div class="frame">
+          <h2 class="more-title">More work</h2>
+          <ProjectGrid projects={more} />
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand heading="Want something like this in your home?" />
+</BaseLayout>
+
+<style>
+  .detail {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    border-bottom: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+    align-items: start;
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .prose :global(p) {
+    font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+    line-height: 1.8;
+    max-width: 62ch;
+    color: var(--text-on-light-muted);
+  }
+
+  .prose :global(p + p) {
+    margin-top: 1.35rem;
+  }
+
+  .meta {
+    border-top: var(--rule-accent) solid var(--terracotta);
+    background: var(--sand);
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  }
+
+  .meta div {
+    padding-block: 0.85rem;
+  }
+
+  .meta div + div {
+    border-top: 1px solid var(--rule-on-light);
+  }
+
+  .meta dt {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+  }
+
+  .meta dd {
+    margin: 0.4rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .meta a {
+    border-bottom: 1px solid var(--rule-on-light);
+  }
+
+  .meta a:hover,
+  .meta a:focus-visible {
+    color: var(--accent-text);
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: clamp(0.75rem, 0.4rem + 1vw, 1.25rem);
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .gallery img {
+    width: 100%;
+    height: auto;
+  }
+
+  .more {
+    background: var(--ink);
+    color: var(--text-on-dark);
+  }
+
+  .more-title {
+    font-size: var(--fs-h3);
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 60rem) {
+    .detail-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

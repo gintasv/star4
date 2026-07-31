@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { services } from '../data/services';
+import { site } from '../data/site';
+---
+
+<BaseLayout
+  title="Page not found | Star 4 Construction"
+  description="That page could not be found. Browse our flooring, stair and railing services or call Martin at (630) 597-8138."
+  noindex
+>
+  <PageHeader
+    label="404"
+    title="That page has moved on."
+    lede="The link you followed does not lead anywhere. Here is where most people are heading."
+  />
+
+  <section class="section links">
+    <div class="frame">
+      <ul class="grid">
+        {
+          services.map((service) => (
+            <li>
+              <a href={`/services/${service.slug}/`}>
+                <span class="name">{service.name}</span>
+                <span class="text">{service.summary}</span>
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/projects/">
+            <span class="name">Completed work</span>
+            <span class="text">Flooring, stair and railing projects across the Chicago area.</span>
+          </a>
+        </li>
+        <li>
+          <a href="/areas/">
+            <span class="name">Service areas</span>
+            <span class="text">The towns we cover across the western and southwest suburbs.</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="call">
+        Or just call {site.contactName} on{' '}
+        <a href={`tel:${site.phoneHref}`}>{site.phone}</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .links {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1px;
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .grid a {
+    display: grid;
+    gap: 0.6rem;
+    height: 100%;
+    padding: clamp(1.35rem, 1rem + 1vw, 1.85rem);
+    background: var(--cream);
+    box-shadow:
+      1px 0 0 var(--rule-on-light),
+      0 1px 0 var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .grid a:hover,
+  .grid a:focus-visible {
+    background: #fff;
+  }
+
+  .name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .text {
+    font-size: var(--fs-small);
+    line-height: 1.6;
+    color: var(--text-on-light-muted);
+  }
+
+  .call {
+    margin-top: 2.5rem;
+    font-size: 0.9375rem;
+    color: var(--text-on-light-muted);
+  }
+
+  .call a {
+    color: var(--accent-text);
+    font-weight: 700;
+    border-bottom: 1px solid currentColor;
+  }
+</style>

@@ -1,0 +1,290 @@
+---
+import { getPublishedProjects } from '../../lib/projects';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import FaqAccordion from '../../components/FaqAccordion.astro';
+import ContactButtons from '../../components/ContactButtons.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { services } from '../../data/services';
+import { areas } from '../../data/areas';
+import { serviceSchema, faqSchema } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return services.map((service) => ({
+    params: { slug: service.slug },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+
+// Projects tagged with this service become proof on the page and internal
+// links out to the project pages.
+const related = (await getPublishedProjects((p) => p.data.service === service.slug)).slice(0, 3);
+
+const otherServices = services.filter((s) => s.slug !== service.slug);
+
+const origin = Astro.site?.origin ?? 'https://star4construction.com';
+---
+
+<BaseLayout
+  title={service.metaTitle}
+  description={service.metaDescription}
+  canonical={`/services/${service.slug}/`}
+  breadcrumbs={[
+    { name: 'Services', href: '/services/' },
+    { name: service.name, href: `/services/${service.slug}/` },
+  ]}
+  schemas={[serviceSchema(origin, service), faqSchema(service.faqs)]}
+>
+  <PageHeader
+    label="Service"
+    title={service.title}
+    lede={service.intro}
+    breadcrumbs={[
+      { name: 'Services', href: '/services/' },
+      { name: service.name, href: `/services/${service.slug}/` },
+    ]}
+  />
+
+  {/* --- What the job involves --------------------------------------------- */}
+  <section class="section includes">
+    <div class="frame includes-grid">
+      <SectionHead label="What the job involves" surface="light" class="includes-head">
+        The work behind the finish.
+      </SectionHead>
+
+      <ul class="checklist">
+        {
+          service.includes.map((item) => (
+            <li>
+              <span class="mark" aria-hidden="true">✦</span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* --- Related work ------------------------------------------------------ */}
+  {
+    related.length > 0 && (
+      <section class="section work">
+        <div class="frame">
+          <SectionHead label="Related work" lede={`Recent ${service.name.toLowerCase()} projects.`}>
+            Seen on the job.
+          </SectionHead>
+          <ProjectGrid projects={related} />
+        </div>
+      </section>
+    )
+  }
+
+  {/* --- Where we do it ---------------------------------------------------- */}
+  <section class="section areas">
+    <div class="frame">
+      <SectionHead
+        label="Where we work"
+        surface="light"
+        lede={`${service.name} across Chicago's western and southwest suburbs. Pick your town for local detail.`}
+      >
+        {service.name} near you.
+      </SectionHead>
+
+      <ul class="town-links">
+        {
+          areas.map((area) => (
+            <li>
+              <a href={`/areas/${area.slug}/`}>
+                {service.name} in {area.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* --- Service FAQ ------------------------------------------------------- */}
+  <section class="section faq">
+    <div class="frame faq-grid">
+      <div>
+        <SectionHead label="Good to know" surface="light" class="faq-head">
+          Questions we get asked.
+        </SectionHead>
+        <ContactButtons tone="on-light" class="faq-buttons" />
+      </div>
+
+      <FaqAccordion items={service.faqs} openFirst />
+    </div>
+  </section>
+
+  {/* --- Other services ---------------------------------------------------- */}
+  <section class="section others">
+    <div class="frame">
+      <h2 class="others-title">Other services</h2>
+      <ul class="other-links">
+        {
+          otherServices.map((s) => (
+            <li>
+              <a href={`/services/${s.slug}/`}>
+                <span class="other-name">{s.name}</span>
+                <span class="other-summary">{s.summary}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand
+    heading={`Get a straight answer on your ${service.name.toLowerCase()} job.`}
+  />
+</BaseLayout>
+
+<style>
+  .includes {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .includes-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .includes-grid :global(.includes-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+
+  .checklist {
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--rule-on-light);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--text-on-light);
+  }
+
+  .mark {
+    color: var(--accent-text);
+    font-size: 0.7em;
+    flex-shrink: 0;
+  }
+
+  .work {
+    background: var(--ink);
+    color: var(--text-on-dark);
+  }
+
+  .areas {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .town-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0;
+    border-top: 1px solid var(--rule-on-light);
+  }
+
+  .town-links a {
+    display: block;
+    padding: 1rem 0.5rem 1rem 0;
+    border-bottom: 1px solid var(--rule-on-light);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-on-light);
+    transition: color 0.15s var(--ease);
+  }
+
+  .town-links a:hover,
+  .town-links a:focus-visible {
+    color: var(--accent-text);
+  }
+
+  .faq {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .faq-grid :global(.faq-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 2rem;
+  }
+
+  .others {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .others-title {
+    font-size: var(--fs-h3);
+    margin-bottom: 2rem;
+  }
+
+  .other-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1px;
+  }
+
+  .other-links a {
+    display: grid;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 1.5rem;
+    background: var(--cream);
+    box-shadow:
+      1px 0 0 var(--rule-on-light),
+      0 1px 0 var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .other-links a:hover,
+  .other-links a:focus-visible {
+    background: #fff;
+  }
+
+  .other-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .other-summary {
+    font-size: var(--fs-small);
+    line-height: 1.6;
+    color: var(--text-on-light-muted);
+  }
+
+  @media (max-width: 60rem) {
+    .includes-grid,
+    .faq-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

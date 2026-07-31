@@ -1,0 +1,221 @@
+---
+import { Image } from 'astro:assets';
+import SectionLabel from './SectionLabel.astro';
+import ContactButtons from './ContactButtons.astro';
+import heroImage from '../assets/hero-stair.jpg';
+
+const strip = ['Flooring', 'Stairs', 'Railings', 'Finish work'];
+---
+
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="hero-copy-inner">
+        <SectionLabel text="Willow Springs Flooring & Stair Contractor" />
+
+        <h1>
+          Floors and stairs.<br />
+          <span class="accent">Finished right.</span>
+        </h1>
+
+        <p class="lede">
+          Installation, sanding, refinishing, custom stairways, railings, and
+          finish work for Chicago-area homes.
+        </p>
+
+        <ContactButtons class="hero-buttons" />
+
+        <ul class="strip">
+          {strip.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    </div>
+
+    <div class="hero-media">
+      {/* Eager + high priority: this is the LCP element on the home page. */}
+      <Image
+        src={heroImage}
+        alt="White oak staircase with custom black iron balusters rising through a two-storey entryway"
+        widths={[560, 840, 1104]}
+        sizes="(max-width: 60rem) 100vw, 42vw"
+        loading="eager"
+        fetchpriority="high"
+        class="hero-img"
+      />
+      <div class="hero-caption">
+        <p class="hero-caption-label">Completed project</p>
+        <p class="hero-caption-title">White oak &amp; custom iron</p>
+      </div>
+      <span class="corner" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-on-dark);
+  }
+
+  .hero-grid {
+    max-width: var(--frame-max);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    min-height: min(78vh, 46rem);
+  }
+
+  /* The green panel bleeds off the left edge of the viewport. */
+  .hero-copy {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: clamp(3rem, 1.5rem + 5vw, 5.5rem) var(--gutter);
+    background:
+      radial-gradient(120% 90% at 15% 40%, #22332e 0%, var(--green-deep) 55%, #16221e 100%);
+  }
+
+  .hero-copy::before {
+    /* Extends the panel background into the left gutter. */
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 -100vw;
+    width: 100vw;
+    background: var(--green-deep);
+  }
+
+  .hero-copy-inner {
+    position: relative;
+    max-width: 34rem;
+    margin-left: auto;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: var(--fs-display);
+    font-weight: 800;
+  }
+
+  .accent {
+    color: var(--orange);
+  }
+
+  .lede {
+    margin-top: 1.75rem;
+    max-width: 34ch;
+    color: var(--text-on-dark-muted);
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.0625rem);
+  }
+
+  .hero-buttons {
+    margin-top: 2.25rem;
+  }
+
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule-on-dark);
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--text-on-dark-muted);
+  }
+
+  .strip li + li::before {
+    content: '/';
+    margin-right: 0.85rem;
+    color: var(--rule-on-dark);
+  }
+
+  /* --- Media ------------------------------------------------------------ */
+  .hero-media {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+  }
+
+  .hero-caption {
+    position: absolute;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    background: rgba(4, 14, 11, 0.82);
+    backdrop-filter: blur(6px);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: 1rem 1.25rem;
+  }
+
+  .hero-caption-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--orange);
+  }
+
+  .hero-caption-title {
+    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--text-on-dark);
+    margin-top: 0.35rem;
+  }
+
+  /* Decorative bracket, echoing the approved design. */
+  .corner {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-top: 2px solid var(--orange);
+    border-right: 2px solid var(--orange);
+  }
+
+  /* Once the strip wraps, a leading separator is left stranded at the start of
+     the second line. Below this width, spacing alone separates the items. */
+  @media (max-width: 34rem) {
+    .strip {
+      gap: 0.4rem 1.15rem;
+    }
+    .strip li + li::before {
+      display: none;
+    }
+  }
+
+  @media (max-width: 60rem) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    .hero-copy-inner {
+      max-width: none;
+      margin-left: 0;
+    }
+
+    .hero-media {
+      order: -1;
+      aspect-ratio: 4 / 3;
+    }
+
+    .hero-caption {
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+    }
+  }
+</style>

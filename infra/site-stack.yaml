@@ -1,0 +1,390 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Star 4 Construction website: private S3 origin, CloudFront distribution with
+  Origin Access Control, URL-rewrite function, security headers, and the quote
+  form Lambda backed by SES.
+
+  Deployed to us-east-1 because CloudFront requires its ACM certificate there.
+
+  SHARED ACCOUNT NOTE: every resource here is created by this stack and named
+  star4-construction-*. Nothing references or mutates a pre-existing resource.
+  Deleting this stack removes exactly what it made and nothing else.
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Apex domain, e.g. star4construction.com
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$'
+
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: >
+      ACM certificate ARN in us-east-1 covering the apex and www. Leave empty
+      on the first deploy — the stack then serves on the CloudFront domain
+      only, and you can add the certificate once DNS validation completes.
+
+  NotifyEmail:
+    Type: String
+    Description: Address the quote form sends to.
+    AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+
+  SesSenderIdentity:
+    Type: String
+    Description: >
+      From address for quote-form mail, e.g. no-reply@star4construction.com.
+      It must sit under the domain identity verified by dns-stack.
+    AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: >
+      ID of the EXISTING hosted zone for DomainName. Supply together with
+      CertificateArn to publish the apex and www alias records. Leave empty to
+      serve on the CloudFront domain only and leave DNS untouched.
+
+Conditions:
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, '']]
+  HasHostedZone: !And
+    - !Condition HasCertificate
+    - !Not [!Equals [!Ref HostedZoneId, '']]
+
+Resources:
+  # ---------------------------------------------------------------- storage --
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    # Retain so tearing down the stack can never silently destroy the site
+    # content; the bucket has to be emptied and removed deliberately.
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'star4-construction-site-${AWS::AccountId}'
+      # Fully private. CloudFront reads it through Origin Access Control;
+      # nothing is publicly readable direct from S3.
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-versions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Project
+          Value: Star4Construction
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontRead
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${SiteBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                # Scoped to this distribution only.
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+
+  # ------------------------------------------------------------- CloudFront --
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub 'star4-construction-oac-${AWS::AccountId}'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # Astro emits directory-style URLs (/services/stairs/). An S3 REST origin
+  # cannot resolve those to index.html on its own, so rewrite at the edge.
+  # This is the single most common cause of a working local build 404ing once
+  # it is deployed.
+  RewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub 'star4-construction-rewrite-${AWS::AccountId}'
+      FunctionConfig:
+        Comment: Map directory URLs to index.html
+        Runtime: cloudfront-js-2.0
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+
+          if (uri.endsWith('/')) {
+            request.uri = uri + 'index.html';
+          } else if (!uri.includes('.')) {
+            // Extensionless path: normalise to the directory form.
+            request.uri = uri + '/index.html';
+          }
+
+          return request;
+        }
+
+  ResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub 'star4-construction-headers-${AWS::AccountId}'
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: true
+            Preload: true
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          ContentSecurityPolicy:
+            # Self-hosted fonts and inline styles only; the sole network call
+            # the page makes is the form POST to the Lambda Function URL.
+            ContentSecurityPolicy: >-
+              default-src 'self';
+              img-src 'self' data:;
+              style-src 'self' 'unsafe-inline';
+              script-src 'self';
+              font-src 'self';
+              connect-src 'self' https://*.lambda-url.us-east-1.on.aws;
+              form-action 'self';
+              base-uri 'self';
+              frame-ancestors 'none';
+              object-src 'none';
+              upgrade-insecure-requests
+            Override: true
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Star 4 Construction website
+        DefaultRootObject: index.html
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_100
+        Aliases: !If
+          - HasCertificate
+          - [!Ref DomainName, !Sub 'www.${DomainName}']
+          - !Ref AWS::NoValue
+        ViewerCertificate: !If
+          - HasCertificate
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+
+        Origins:
+          - Id: s3-origin
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+
+        DefaultCacheBehavior:
+          TargetOriginId: s3-origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          # Managed CachingOptimized.
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt RewriteFunction.FunctionMetadata.FunctionARN
+
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 404
+            ResponsePagePath: /404.html
+            ErrorCachingMinTTL: 60
+          - ErrorCode: 404
+            ResponseCode: 404
+            ResponsePagePath: /404.html
+            ErrorCachingMinTTL: 60
+
+      Tags:
+        - Key: Project
+          Value: Star4Construction
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ------------------------------------------------------------- quote form --
+  QuoteFormRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'star4-construction-quote-form-${AWS::AccountId}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: send-quote-email
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Narrow on purpose: this role may send mail through the one
+              # domain identity and do nothing else.
+              #
+              # The resource is the DOMAIN, not the From address. SES verifies
+              # star4construction.com as a domain identity, and permission to
+              # send as any address beneath it is granted against that domain
+              # ARN. Scoping to the address ARN would deny every send.
+              - Effect: Allow
+                Action: [ses:SendEmail]
+                Resource: !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${DomainName}'
+                Condition:
+                  StringEquals:
+                    ses:FromAddress: !Ref SesSenderIdentity
+      Tags:
+        - Key: Project
+          Value: Star4Construction
+
+  QuoteFormFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'star4-construction-quote-form-${AWS::AccountId}'
+      Runtime: nodejs22.x
+      Handler: index.handler
+      Role: !GetAtt QuoteFormRole.Arn
+      Timeout: 10
+      MemorySize: 256
+      Environment:
+        Variables:
+          NOTIFY_EMAIL: !Ref NotifyEmail
+          SENDER_IDENTITY: !Ref SesSenderIdentity
+          ALLOWED_ORIGIN: !Sub 'https://${DomainName}'
+      Code:
+        # Injected by infra/build-template.mjs from
+        # infra/lambda/quote-form/index.js. Never edit the generated template -
+        # edit the handler and regenerate, so only one copy of this code exists.
+        ZipFile: '@@QUOTE_FORM_HANDLER@@'
+      Tags:
+        - Key: Project
+          Value: Star4Construction
+
+  QuoteFormUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt QuoteFormFunction.Arn
+      AuthType: NONE
+      Cors:
+        AllowOrigins: [!Sub 'https://${DomainName}', !Sub 'https://www.${DomainName}']
+        AllowMethods: [POST]
+        AllowHeaders: [content-type]
+        MaxAge: 3600
+
+  QuoteFormUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref QuoteFormFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
+  QuoteFormLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/star4-construction-quote-form-${AWS::AccountId}'
+      RetentionInDays: 30
+
+  # ------------------------------------------------------------------- DNS --
+  # Only the apex and www names, and only in the zone passed in. Nothing else
+  # in the zone is referenced, so no pre-existing record can be replaced.
+  ApexAlias:
+    Condition: HasHostedZone
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        # Z2FDTNDATAQYW2 is CloudFront's fixed global hosted-zone ID.
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt Distribution.DomainName
+        EvaluateTargetHealth: false
+
+  ApexAliasIpv6:
+    Condition: HasHostedZone
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: AAAA
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt Distribution.DomainName
+        EvaluateTargetHealth: false
+
+  WwwAlias:
+    Condition: HasHostedZone
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt Distribution.DomainName
+        EvaluateTargetHealth: false
+
+  WwwAliasIpv6:
+    Condition: HasHostedZone
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub 'www.${DomainName}'
+      Type: AAAA
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt Distribution.DomainName
+        EvaluateTargetHealth: false
+
+Outputs:
+  BucketName:
+    Description: Deploy target. deploy.ps1 reads this rather than guessing.
+    Value: !Ref SiteBucket
+    Export:
+      Name: Star4Construction-BucketName
+
+  DistributionId:
+    Description: Invalidation target.
+    Value: !Ref Distribution
+    Export:
+      Name: Star4Construction-DistributionId
+
+  DistributionDomain:
+    Description: CloudFront domain, for testing before DNS is switched over.
+    Value: !GetAtt Distribution.DomainName
+
+  QuoteFormEndpoint:
+    Description: Set as PUBLIC_FORM_ENDPOINT when building the site.
+    Value: !GetAtt QuoteFormUrl.FunctionUrl

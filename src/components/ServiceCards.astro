@@ -1,0 +1,122 @@
+---
+import { services } from '../data/services';
+
+/**
+ * The service cards. Each links through to the full service page, which is
+ * where the "<service> in <suburb>" ranking actually happens — the cards are
+ * the entry point, not the destination.
+ *
+ * The approved design shows three tinted panels, so the home page passes
+ * limit={3}; the services index shows all five.
+ */
+interface Props {
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+const shown = limit ? services.slice(0, limit) : services;
+
+const tints = ['cream', 'sand', 'sage'];
+---
+
+<ul class="cards">
+  {
+    shown.map((service, i) => (
+      <li class:list={['card', `tint-${tints[i % tints.length]}`]}>
+        <a class="card-link" href={`/services/${service.slug}/`}>
+          <span class="num" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+
+          <h3 class="card-title">{service.name}</h3>
+          <p class="card-text">{service.summary}</p>
+
+          <span class="keywords" aria-hidden="true">
+            {service.keywords.join(' / ')}
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1px;
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .card {
+    display: flex;
+  }
+
+  .card-link {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+    min-height: 19rem;
+    /* Dividers are drawn per card rather than by letting a container
+       background show through the 1px gaps. With an odd number of cards the
+       trailing grid cells are empty, and a container background would render
+       them as a solid block. */
+    box-shadow:
+      1px 0 0 var(--rule-on-light),
+      0 1px 0 var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .tint-cream .card-link {
+    background: var(--cream);
+  }
+  .tint-sand .card-link {
+    background: var(--sand);
+  }
+  .tint-sage .card-link {
+    background: var(--sage);
+  }
+
+  .card-link:hover,
+  .card-link:focus-visible {
+    background: #fff;
+  }
+
+  .num {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--terracotta);
+    border-radius: 50%;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--accent-text);
+    margin-bottom: 2rem;
+  }
+
+  .card-title {
+    font-size: var(--fs-h3);
+    color: var(--text-on-light);
+    text-wrap: balance;
+  }
+
+  .card-text {
+    margin-top: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+  }
+
+  .keywords {
+    margin-top: auto;
+    padding-top: 1.75rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-text);
+  }
+</style>

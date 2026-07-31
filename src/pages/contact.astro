@@ -1,0 +1,175 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import QuoteForm from '../components/QuoteForm.astro';
+import ProcessSteps from '../components/ProcessSteps.astro';
+import { site, formatAddress } from '../data/site';
+---
+
+<BaseLayout
+  title="Contact Star 4 Construction | (630) 597-8138"
+  description="Contact Martin at Star 4 Construction for flooring, stairs, railings and finish carpentry across Chicago's western and southwest suburbs. Call (630) 597-8138."
+  canonical="/contact/"
+  breadcrumbs={[{ name: 'Contact', href: '/contact/' }]}
+>
+  <PageHeader
+    label="Get in touch"
+    title="One conversation can get the project moving."
+    lede={`Tell ${site.contactName} what you need done and where the project is. No long intake, no complicated steps — you will speak to the person who will actually look at the job.`}
+    breadcrumbs={[{ name: 'Contact', href: '/contact/' }]}
+  />
+
+  <section class="section contact">
+    <div class="frame contact-grid">
+      <div>
+        <h2 class="form-title">Request an estimate</h2>
+        <QuoteForm />
+      </div>
+
+      <aside class="details">
+        <dl>
+          <div>
+            <dt>Phone</dt>
+            <dd class="big">
+              <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd>
+              <a class="email" href={`mailto:${site.email}`}>{site.email}</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Based in</dt>
+            <dd>
+              <address>{formatAddress()}</address>
+            </dd>
+          </div>
+          <div>
+            <dt>Hours</dt>
+            <dd>
+              {
+                site.openingHours.map((slot) => (
+                  <span class="hours">
+                    {slot.days.length > 1
+                      ? `${slot.days[0].slice(0, 3)}–${slot.days[slot.days.length - 1].slice(0, 3)}`
+                      : slot.days[0].slice(0, 3)}
+                    {' '}
+                    {slot.opens}–{slot.closes}
+                  </span>
+                ))
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>Serving</dt>
+            <dd>
+              <a href="/areas/">Chicago's western &amp; southwest suburbs</a>
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section process">
+    <div class="frame">
+      <SectionHead
+        label="How it works"
+        surface="light"
+        lede="No long intake. No complicated steps. Start with a call or email."
+      >
+        Three straightforward steps.
+      </SectionHead>
+      <ProcessSteps />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 4rem);
+    align-items: start;
+  }
+
+  .form-title {
+    font-size: var(--fs-h3);
+    margin-bottom: 1.5rem;
+  }
+
+  .details {
+    background: var(--green-deep);
+    color: var(--text-on-dark);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+  }
+
+  .details div {
+    padding-block: 1.1rem;
+  }
+
+  .details div + div {
+    border-top: 1px solid var(--rule-on-dark);
+  }
+
+  .details dt {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--orange);
+  }
+
+  .details dd {
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .details dd.big {
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .details a:hover,
+  .details a:focus-visible {
+    color: var(--orange);
+  }
+
+  .email {
+    overflow-wrap: anywhere;
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  .hours {
+    display: block;
+  }
+
+  .hours + .hours {
+    margin-top: 0.25rem;
+  }
+
+  .process {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  @media (max-width: 60rem) {
+    .contact-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

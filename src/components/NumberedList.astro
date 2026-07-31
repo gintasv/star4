@@ -1,0 +1,92 @@
+---
+/**
+ * Panel of numbered rows with a filled circle marker — the "Talk directly with
+ * Martin / Specialized finish work / Local service" block in the design.
+ */
+interface Props {
+  items: { title: string; text: string }[];
+  tone?: 'light' | 'dark';
+}
+
+const { items, tone = 'light' } = Astro.props;
+---
+
+<ul class:list={['rows', `tone-${tone}`]}>
+  {
+    items.map((item, i) => (
+      <li class="row">
+        <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        <div>
+          <h3 class="row-title">{item.title}</h3>
+          <p class="row-text">{item.text}</p>
+        </div>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .rows {
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .tone-light {
+    background: var(--cream);
+  }
+  .tone-dark {
+    background: var(--green-panel);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    padding: clamp(1.35rem, 1rem + 1vw, 1.85rem) clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+  }
+
+  .tone-light .row + .row {
+    border-top: 1px solid var(--rule-on-light);
+  }
+  .tone-dark .row + .row {
+    border-top: 1px solid var(--rule-on-dark);
+  }
+
+  .num {
+    display: grid;
+    place-items: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    background: var(--terracotta);
+    color: var(--cream);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    translate: 0 0.15em;
+  }
+
+  .row-title {
+    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.3rem);
+  }
+
+  .tone-light .row-title {
+    color: var(--text-on-light);
+  }
+  .tone-dark .row-title {
+    color: var(--text-on-dark);
+  }
+
+  .row-text {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .tone-light .row-text {
+    color: var(--text-on-light-muted);
+  }
+  .tone-dark .row-text {
+    color: var(--text-on-dark-muted);
+  }
+</style>

@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Star 4 Construction: TLS certificate and SES sending identity.
+
+  Deployed first, because site-stack needs the certificate ARN.
+
+  SHARED ACCOUNT NOTE: this stack ADDS records to an existing hosted zone that
+  it does not own and must never delete. It takes HostedZoneId as a parameter
+  rather than creating a zone, and every record it manages is scoped to a name
+  it creates itself:
+
+    - the two ACM validation CNAMEs (random subdomain labels)
+    - three SES DKIM CNAMEs (_domainkey subdomain labels)
+    - one DMARC TXT at _dmarc.<domain>
+
+  It never touches the apex, www, NS, SOA or MX. Deleting this stack removes
+  only the records listed above.
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Apex domain, e.g. star4construction.com
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$'
+
+  HostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Description: >
+      ID of the EXISTING hosted zone for DomainName. Take it from
+      infra/inventory-before.json - do not create a new zone.
+
+  DmarcReportEmail:
+    Type: String
+    Description: Address DMARC aggregate reports are sent to.
+    AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+
+Resources:
+  # ------------------------------------------------------------------- TLS --
+  # Must live in us-east-1: CloudFront reads certificates from that region only.
+  # CloudFormation writes the validation CNAMEs into HostedZoneId itself and
+  # waits for validation, so stack creation takes a few minutes.
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub 'www.${DomainName}'
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+        - DomainName: !Sub 'www.${DomainName}'
+          HostedZoneId: !Ref HostedZoneId
+      Tags:
+        - Key: Project
+          Value: Star4Construction
+
+  # ------------------------------------------------------------------- SES --
+  # Domain identity rather than a single address, so the quote form can send as
+  # no-reply@<domain>. DKIM signing is what gets the mail into the inbox rather
+  # than the spam folder.
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: !Ref DomainName
+      DkimAttributes:
+        SigningEnabled: true
+
+  DkimRecord1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !GetAtt EmailIdentity.DkimDNSTokenName1
+      Type: CNAME
+      TTL: '1800'
+      ResourceRecords:
+        - !GetAtt EmailIdentity.DkimDNSTokenValue1
+
+  DkimRecord2:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !GetAtt EmailIdentity.DkimDNSTokenName2
+      Type: CNAME
+      TTL: '1800'
+      ResourceRecords:
+        - !GetAtt EmailIdentity.DkimDNSTokenValue2
+
+  DkimRecord3:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !GetAtt EmailIdentity.DkimDNSTokenName3
+      Type: CNAME
+      TTL: '1800'
+      ResourceRecords:
+        - !GetAtt EmailIdentity.DkimDNSTokenValue3
+
+  # Monitoring only (p=none): reports where mail claiming to be from this
+  # domain comes from, without affecting delivery of anything.
+  #
+  # Deliberately no SPF record. DKIM alignment alone satisfies DMARC, and an
+  # SPF TXT at the apex is the record most likely to collide if the domain
+  # later hosts real mailboxes (Google Workspace and similar). Adding SPF then
+  # is a merge, not a fresh record - see README.
+  DmarcRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '_dmarc.${DomainName}'
+      Type: TXT
+      TTL: '1800'
+      ResourceRecords:
+        - !Sub '"v=DMARC1; p=none; rua=mailto:${DmarcReportEmail}"'
+
+Outputs:
+  CertificateArn:
+    Description: Pass to site-stack as the CertificateArn parameter.
+    Value: !Ref Certificate
+
+  SesDomainIdentity:
+    Description: Verified sending domain.
+    Value: !Ref DomainName
+
+  SenderAddress:
+    Description: Pass to site-stack as SesSenderIdentity.
+    Value: !Sub 'no-reply@${DomainName}'

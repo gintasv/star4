@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Star 4 Construction">
+  <rect width="64" height="64" fill="#141a1b"/>
+  <!-- Four-point star, sized to stay legible at 16px -->
+  <path d="M32 8 L39 25 L56 32 L39 39 L32 56 L25 39 L8 32 L25 25 Z" fill="#f07d57"/>
+</svg>

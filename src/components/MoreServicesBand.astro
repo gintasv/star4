@@ -1,0 +1,90 @@
+---
+import SectionLabel from './SectionLabel.astro';
+import { additionalServices } from '../data/services';
+import { site } from '../data/site';
+---
+
+<section class="band">
+  <div class="band-inner">
+    <div class="band-copy">
+      <SectionLabel text="More home improvement" />
+      <h2>Finish the rest<br />of the project.</h2>
+    </div>
+
+    <ul class="list">
+      {
+        additionalServices.map((item) => (
+          <li>
+            <span class="tick" aria-hidden="true">✦</span>
+            {item}
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="band-link" href={`mailto:${site.email}`}>
+      Email about another service <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .band {
+    background: linear-gradient(100deg, var(--green-band-a) 0%, var(--green-band-b) 100%);
+    color: var(--text-on-dark);
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .band-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto;
+    align-items: center;
+    gap: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+    padding: clamp(2rem, 1.25rem + 2.5vw, 3rem) clamp(1.75rem, 1rem + 2vw, 2.5rem);
+  }
+
+  h2 {
+    font-size: var(--fs-h3);
+  }
+
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-on-dark-muted);
+  }
+
+  .list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .tick {
+    color: var(--orange);
+    font-size: 0.7em;
+    flex-shrink: 0;
+  }
+
+  .band-link {
+    white-space: nowrap;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    border-bottom: 1px solid var(--orange);
+    padding-bottom: 0.3rem;
+    transition: color 0.15s var(--ease);
+  }
+
+  .band-link:hover,
+  .band-link:focus-visible {
+    color: var(--orange);
+  }
+
+  @media (max-width: 62rem) {
+    .band-inner {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+</style>

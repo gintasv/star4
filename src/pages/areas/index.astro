@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { areas } from '../../data/areas';
+import { site } from '../../data/site';
+---
+
+<BaseLayout
+  title="Service Areas | Chicago's Western & Southwest Suburbs"
+  description="Flooring, stair and railing work in Willow Springs, Burr Ridge, Hinsdale, La Grange, Lemont, Orland Park, Darien, Downers Grove and nearby suburbs."
+  canonical="/areas/"
+  breadcrumbs={[{ name: 'Service areas', href: '/areas/' }]}
+>
+  <PageHeader
+    label="Where we work"
+    title="Serving Chicago's western and southwest suburbs."
+    lede={`Based in ${site.address.locality}, Star 4 Construction works with homeowners across the surrounding area on flooring, stairs, railings, and detailed home-improvement projects. Pick your town for local detail — or call if you are just outside the list.`}
+    breadcrumbs={[{ name: 'Service areas', href: '/areas/' }]}
+  />
+
+  <section class="section grid-section">
+    <div class="frame">
+      <ul class="cards">
+        {
+          areas.map((area) => (
+            <li>
+              <a href={`/areas/${area.slug}/`}>
+                <span class="county">{area.county}</span>
+                <h2>{area.name}</h2>
+                <p>{area.summary}</p>
+                <span class="cue">
+                  Flooring &amp; stairs in {area.name} <span aria-hidden="true">↗</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="note">
+        Nearby location not listed? Call {site.contactName} at{' '}
+        <a href={`tel:${site.phoneHref}`}>{site.phone}</a> to confirm availability.
+      </p>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .grid-section {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1px;
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .cards a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+    background: var(--cream);
+    box-shadow:
+      1px 0 0 var(--rule-on-light),
+      0 1px 0 var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .cards a:hover,
+  .cards a:focus-visible {
+    background: #fff;
+  }
+
+  .county {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+  }
+
+  .cards h2 {
+    font-size: var(--fs-h3);
+    margin-top: 1rem;
+  }
+
+  .cards p {
+    margin-top: 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+  }
+
+  .cue {
+    margin-top: auto;
+    padding-top: 1.75rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-text);
+  }
+
+  .note {
+    margin-top: 2.5rem;
+    font-size: 0.9375rem;
+    color: var(--text-on-light-muted);
+  }
+
+  .note a {
+    color: var(--accent-text);
+    font-weight: 700;
+    border-bottom: 1px solid currentColor;
+  }
+</style>

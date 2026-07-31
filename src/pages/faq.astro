@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { faqs } from '../data/faqs';
+import { services } from '../data/services';
+import { faqSchema } from '../lib/schema';
+
+// The sitewide questions plus every service-specific one, so this page is the
+// single canonical home for FAQ content.
+const allFaqs = [...faqs, ...services.flatMap((s) => s.faqs)];
+---
+
+<BaseLayout
+  title="Common Questions | Star 4 Construction"
+  description="Answers on hardwood refinishing, floor installation, stair rebuilds, railings, trim, service areas and how to request an estimate from Star 4 Construction."
+  canonical="/faq/"
+  breadcrumbs={[{ name: 'Common questions', href: '/faq/' }]}
+  schemas={[faqSchema(allFaqs)]}
+>
+  <PageHeader
+    label="Good to know"
+    title="Common questions, simple answers."
+    lede="The things homeowners ask most often, about the work itself and about how a project runs."
+    breadcrumbs={[{ name: 'Common questions', href: '/faq/' }]}
+  />
+
+  <section class="section general">
+    <div class="frame">
+      <SectionHead label="General" surface="light">About working with us.</SectionHead>
+      <FaqAccordion items={faqs} openFirst />
+    </div>
+  </section>
+
+  {
+    services.map((service, i) => (
+      <section class:list={['section', i % 2 === 0 ? 'alt' : 'plain']}>
+        <div class="frame">
+          <SectionHead
+            label={service.name}
+            surface="light"
+            lede={service.summary}
+          >
+            {service.title}
+          </SectionHead>
+          <FaqAccordion items={service.faqs} />
+          <a class="more" href={`/services/${service.slug}/`}>
+            More on {service.name.toLowerCase()} <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
+    ))
+  }
+
+  <CtaBand heading="Still have a question? Just ask." />
+</BaseLayout>
+
+<style>
+  .general {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .alt {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .plain {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .more {
+    display: inline-block;
+    margin-top: 2rem;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.35rem;
+  }
+</style>

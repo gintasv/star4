@@ -1,0 +1,87 @@
+---
+/**
+ * The three-step "how it works" cards. Tinted cream / sand / sage with a
+ * coloured rule beneath each, exactly as in the approved design.
+ */
+const steps = [
+  {
+    title: 'Call or email',
+    text: 'Tell Martin what you need done and where the project is located.',
+  },
+  {
+    title: 'Review the work',
+    text: 'Discuss the scope, materials, finish options, timing, and estimate.',
+  },
+  {
+    title: 'Schedule the project',
+    text: 'Approve the scope, choose the schedule, and get the work underway.',
+  },
+];
+
+const tints = ['cream', 'sand', 'sage'];
+---
+
+<ol class="steps">
+  {
+    steps.map((step, i) => (
+      <li class:list={['step', `tint-${tints[i]}`]}>
+        <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        <h3 class="step-title">{step.title}</h3>
+        <p class="step-text">{step.text}</p>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1px;
+    background: var(--rule-on-light);
+    border-top: 1px solid var(--rule-on-light);
+  }
+
+  .step {
+    position: relative;
+    padding: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+    padding-bottom: clamp(2.5rem, 1.5rem + 2.5vw, 3.25rem);
+    min-height: 14rem;
+    /* The coloured rule under each card. */
+    border-bottom: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .tint-cream {
+    background: var(--cream);
+  }
+  .tint-sand {
+    background: var(--sand);
+    border-bottom-color: var(--green-deep);
+  }
+  .tint-sage {
+    background: var(--sage);
+  }
+
+  .num {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--accent-text);
+    margin-bottom: 2.5rem;
+  }
+
+  .step-title {
+    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.6rem);
+    color: var(--text-on-light);
+    text-wrap: balance;
+  }
+
+  .step-text {
+    margin-top: 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+    max-width: 34ch;
+  }
+</style>

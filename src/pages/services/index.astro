@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ServiceCards from '../../components/ServiceCards.astro';
+import MoreServicesBand from '../../components/MoreServicesBand.astro';
+import CtaBand from '../../components/CtaBand.astro';
+---
+
+<BaseLayout
+  title="Flooring, Stair & Carpentry Services | Star 4"
+  description="Hardwood floor sanding and refinishing, floor installation, stairs, railings, trim and moldings across Chicago's western and southwest suburbs."
+  canonical="/services/"
+  breadcrumbs={[{ name: 'Services', href: '/services/' }]}
+>
+  <PageHeader
+    label="Core services"
+    title="Craftsmanship you can see under every step."
+    lede="Floors and stairways shape how a home looks and feels. Star 4 Construction focuses on the installation and finish details that make the whole space feel complete — and takes on the surrounding home-improvement work so a project does not have to be split between trades."
+    breadcrumbs={[{ name: 'Services', href: '/services/' }]}
+  />
+
+  <section class="section list">
+    <div class="frame">
+      <ServiceCards />
+    </div>
+
+    <div class="frame band-wrap">
+      <MoreServicesBand />
+    </div>
+  </section>
+
+  <CtaBand heading="Not sure which service you need? Ask." />
+</BaseLayout>
+
+<style>
+  .list {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .band-wrap {
+    margin-top: clamp(2rem, 1rem + 2.5vw, 3rem);
+  }
+</style>

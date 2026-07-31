@@ -1,0 +1,291 @@
+---
+import { site, nav } from '../data/site';
+
+const path = Astro.url.pathname;
+/** A nav item is active for its own page and anything beneath it. */
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">
+      <span class="brand-text">
+        <span class="wordmark">{site.wordmark}</span>
+        <span class="tagline">{site.tagline}</span>
+      </span>
+    </a>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={['nav-link', { active: isActive(item.href) }]}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="call-cta" href={`tel:${site.phoneHref}`}>
+      <span class="call-cta-label">Call now</span>
+      <span class="call-cta-number">{site.phone}</span>
+    </a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      aria-label="Open menu"
+    >
+      <span class="bars" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<script>
+  // Roughly 15 lines of JS for the mobile menu is the only script the site
+  // ships. Everything else is static HTML.
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const header = document.querySelector<HTMLElement>('.site-header');
+
+  toggle?.addEventListener('click', () => {
+    const open = header?.classList.toggle('nav-open') ?? false;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+
+  // Close on Escape so keyboard users are never trapped behind the overlay.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header?.classList.contains('nav-open')) {
+      header.classList.remove('nav-open');
+      toggle?.setAttribute('aria-expanded', 'false');
+      toggle?.setAttribute('aria-label', 'Open menu');
+      toggle?.focus();
+    }
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--header);
+    color: var(--text-on-dark);
+  }
+
+  .bar {
+    max-width: var(--frame-max);
+    margin-inline: auto;
+    padding: 0 var(--gutter);
+    min-height: 3.875rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  /* --- Brand ------------------------------------------------------------ */
+  .brand {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+  }
+
+  .brand-text {
+    display: block;
+    /* The orange bar to the left of the wordmark. */
+    border-left: 3px solid var(--terracotta);
+    padding-left: 0.875rem;
+  }
+
+  .wordmark {
+    display: block;
+    font-size: clamp(0.95rem, 0.8rem + 0.6vw, 1.2rem);
+    font-weight: 800;
+    letter-spacing: 0.005em;
+    line-height: 1.1;
+  }
+
+  .tagline {
+    display: block;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-on-dark-muted);
+    margin-top: 0.15rem;
+  }
+
+  /* --- Nav -------------------------------------------------------------- */
+  .nav ul {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 0.2rem + 1.6vw, 2.25rem);
+  }
+
+  .nav-link {
+    position: relative;
+    font-size: 0.875rem;
+    font-weight: 400;
+    padding-block: 0.35rem;
+    color: var(--text-on-dark);
+    white-space: nowrap;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    scale: 0 1;
+    transition: scale 0.2s var(--ease);
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after,
+  .nav-link.active::after {
+    scale: 1 1;
+  }
+
+  .nav-link.active {
+    color: var(--orange);
+  }
+
+  /* --- Call button ------------------------------------------------------ */
+  .call-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--terracotta);
+    color: var(--cream);
+    padding: 0.6rem 1.1rem;
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .call-cta:hover,
+  .call-cta:focus-visible {
+    background: #c25f2c;
+  }
+
+  .call-cta-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+  }
+
+  .call-cta-number {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* --- Mobile ----------------------------------------------------------- */
+  .menu-toggle {
+    display: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-on-dark);
+  }
+
+  .bars,
+  .bars::before,
+  .bars::after {
+    display: block;
+    width: 1.35rem;
+    height: 2px;
+    background: currentColor;
+    transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+
+  .bars::before,
+  .bars::after {
+    content: '';
+    position: absolute;
+  }
+  .bars::before {
+    transform: translateY(-6px);
+  }
+  .bars::after {
+    transform: translateY(6px);
+  }
+
+  :global(.nav-open) .bars {
+    background: transparent;
+  }
+  :global(.nav-open) .bars::before {
+    transform: rotate(45deg);
+  }
+  :global(.nav-open) .bars::after {
+    transform: rotate(-45deg);
+  }
+
+  @media (max-width: 60rem) {
+    .menu-toggle {
+      display: flex;
+    }
+
+    .call-cta {
+      /* Keep tap-to-call visible on mobile but drop the wordy label. */
+      padding: 0.55rem 0.85rem;
+    }
+    .call-cta-label {
+      display: none;
+    }
+
+    .nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--header);
+      border-top: 1px solid var(--rule-on-dark);
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.25s var(--ease);
+    }
+
+    .nav ul {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .nav li + li {
+      border-top: 1px solid var(--rule-on-dark);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 1rem var(--gutter);
+      font-size: 1rem;
+    }
+
+    :global(.site-header.nav-open) .nav {
+      grid-template-rows: 1fr;
+    }
+  }
+
+  @media (max-width: 26rem) {
+    .tagline {
+      display: none;
+    }
+    .call-cta-number {
+      font-size: 0.75rem;
+    }
+  }
+</style>

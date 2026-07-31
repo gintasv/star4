@@ -1,0 +1,88 @@
+---
+import { areas } from '../data/areas';
+
+/**
+ * The bordered panel listing every town we serve. Each entry links through to
+ * its area page — this is the main internal-linking route into those pages, so
+ * it appears on the home page and the areas index.
+ */
+---
+
+<div class="panel">
+  <p class="panel-label">Common service areas</p>
+
+  <ul class="towns">
+    {
+      areas.map((area) => (
+        <li>
+          <a href={`/areas/${area.slug}/`}>
+            <span class="dot" aria-hidden="true"></span>
+            {area.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="note">Nearby location not listed? Call or email to confirm availability.</p>
+</div>
+
+<style>
+  .panel {
+    background: var(--green-panel);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .panel-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--orange);
+    margin-bottom: 1.75rem;
+  }
+
+  .towns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: 0;
+  }
+
+  .towns li {
+    border-bottom: 1px solid var(--rule-on-dark);
+  }
+
+  .towns a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    padding: 0.85rem 0.5rem 0.85rem 0;
+    font-size: clamp(0.8125rem, 0.75rem + 0.3vw, 0.9375rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--text-on-dark);
+    transition: color 0.15s var(--ease);
+  }
+
+  .towns a:hover,
+  .towns a:focus-visible {
+    color: var(--orange);
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--orange);
+    flex-shrink: 0;
+    translate: 0 -0.15em;
+  }
+
+  .note {
+    margin-top: 1.75rem;
+    font-size: var(--fs-small);
+    color: var(--text-on-dark-muted);
+  }
+</style>

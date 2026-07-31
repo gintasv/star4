@@ -1,0 +1,99 @@
+---
+import { site } from '../data/site';
+
+/**
+ * The cream band directly beneath the hero: a prompt plus phone and email,
+ * split into three cells by hairline rules.
+ */
+---
+
+<section class="strip" aria-label="Contact details">
+  <div class="cells">
+    <div class="cell cell-prompt">
+      <p class="cell-label">Ready to discuss the job?</p>
+      <p class="cell-value">Local work. Direct contact.</p>
+    </div>
+
+    <div class="cell">
+      <p class="cell-label">Phone</p>
+      <p class="cell-value">
+        <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+      </p>
+    </div>
+
+    <div class="cell cell-email">
+      <p class="cell-label">Email</p>
+      <p class="cell-value">
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .strip {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .cells {
+    max-width: var(--frame-max);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr;
+  }
+
+  .cell {
+    padding: 1.5rem var(--gutter);
+    border-left: 1px solid var(--rule-on-light);
+  }
+
+  /* The first cell is flush with the page edge, so no leading rule. */
+  .cell-prompt {
+    border-left: 0;
+  }
+
+  .cell-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--text-on-light-muted);
+  }
+
+  .cell-value {
+    margin-top: 0.4rem;
+    font-size: clamp(1rem, 0.9rem + 0.55vw, 1.375rem);
+    font-weight: 700;
+    color: var(--text-on-light);
+    line-height: 1.25;
+  }
+
+  .cell-value a {
+    transition: color 0.15s var(--ease);
+  }
+
+  .cell-value a:hover,
+  .cell-value a:focus-visible {
+    color: var(--accent-text);
+  }
+
+  /* The email address is the longest string here; let it shrink first. */
+  .cell-email .cell-value {
+    font-size: clamp(0.9375rem, 0.85rem + 0.5vw, 1.25rem);
+    word-break: break-word;
+  }
+
+  @media (max-width: 55rem) {
+    .cells {
+      grid-template-columns: 1fr;
+    }
+    .cell {
+      border-left: 0;
+      border-top: 1px solid var(--rule-on-light);
+    }
+    .cell-prompt {
+      border-top: 0;
+    }
+  }
+</style>

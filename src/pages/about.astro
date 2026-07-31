@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import NumberedList from '../components/NumberedList.astro';
+import ProcessSteps from '../components/ProcessSteps.astro';
+import ContactButtons from '../components/ContactButtons.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+import { areas } from '../data/areas';
+
+const differentiators = [
+  {
+    title: `Talk directly with ${site.contactName}`,
+    text: 'One direct point of contact from the first conversation through to the finished job. Nothing gets lost being passed between an estimator, a scheduler and a crew lead.',
+  },
+  {
+    title: 'Specialized finish work',
+    text: 'Floors, stairways and railings are the focus rather than a sideline. That specialisation is what shows up in the details — tight joints, even finishes, and stairs that do not move underfoot.',
+  },
+  {
+    title: 'Local service',
+    text: `Based in ${site.address.locality} and working across ${areas.length} nearby towns. Short travel means quicker visits, and it means the work is done in the community rather than at arm's length.`,
+  },
+  {
+    title: 'The related work too',
+    text: 'Trim, doors, painting, carpentry and general repairs can be folded into the same visit, so a project does not have to be split across several trades and several schedules.',
+  },
+];
+---
+
+<BaseLayout
+  title="About | Willow Springs Flooring & Stair Contractor"
+  description="Star 4 Construction is a Willow Springs flooring, stair and finish carpentry contractor serving Chicago's western and southwest suburbs. Talk directly with Martin."
+  canonical="/about/"
+  breadcrumbs={[{ name: 'About', href: '/about/' }]}
+>
+  <PageHeader
+    label="About"
+    title="Clear contact. Focused work. No runaround."
+    lede={`Star 4 Construction is a flooring, stair and finish carpentry contractor based in ${site.address.locality}, Illinois, working with homeowners across Chicago's western and southwest suburbs.`}
+    breadcrumbs={[{ name: 'About', href: '/about/' }]}
+  />
+
+  <section class="section story">
+    <div class="frame story-grid">
+      <div class="story-body">
+        <p>
+          Most of what we do comes down to two things: floors and the stairs that
+          run between them. They are the surfaces people touch every day, and
+          they are unforgiving of shortcuts — a floor that was not properly
+          prepared telegraphs it within a year, and a staircase built to
+          approximate measurements is visible from across the room forever.
+        </p>
+        <p>
+          So the approach is narrow on purpose. Sanding and refinishing,
+          installation, stair builds and repairs, railings and balusters, trim
+          and moldings. Doing a smaller range of work repeatedly is what makes
+          the difference between a job that looks acceptable on handover and one
+          that still looks right in five years.
+        </p>
+        <p>
+          Alongside that, we take on the surrounding home-improvement work —
+          doors, painting, decks and exterior woodwork, general carpentry and
+          repairs — because it is usually more efficient to fold it into the same
+          visit than to coordinate another trade around it.
+        </p>
+        <p>
+          When you call, you speak to {site.contactName}. The person who quotes
+          the job is the person who looks at it and the person you deal with
+          while it is underway.
+        </p>
+      </div>
+
+      <aside class="story-aside">
+        <p class="aside-label">Start here</p>
+        <ContactButtons tone="on-light" class="aside-buttons" />
+      </aside>
+    </div>
+  </section>
+
+  <section class="section why">
+    <div class="frame why-grid">
+      <SectionHead label="What that means for you" surface="light" class="why-head">
+        Why homeowners call.
+      </SectionHead>
+      <NumberedList items={differentiators} />
+    </div>
+  </section>
+
+  <section class="section process">
+    <div class="frame">
+      <SectionHead
+        label="How it works"
+        surface="light"
+        lede="No long intake. No complicated steps. Start with a call or email."
+      >
+        Three straightforward steps.
+      </SectionHead>
+      <ProcessSteps />
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .story {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+    align-items: start;
+  }
+
+  .story-body p {
+    font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+    line-height: 1.8;
+    max-width: 62ch;
+    color: var(--text-on-light-muted);
+  }
+
+  .story-body p + p {
+    margin-top: 1.5rem;
+  }
+
+  .story-aside {
+    background: var(--sand);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2rem);
+  }
+
+  .aside-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+    margin-bottom: 1.25rem;
+  }
+
+  .why {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .why-grid :global(.why-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+
+  .process {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  @media (max-width: 60rem) {
+    .story-grid,
+    .why-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

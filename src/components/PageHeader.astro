@@ -1,0 +1,89 @@
+---
+import SectionLabel from './SectionLabel.astro';
+
+/**
+ * Dark header band for interior pages. Carries the visible breadcrumb trail,
+ * which pairs with the BreadcrumbList JSON-LD emitted by BaseLayout.
+ */
+interface Props {
+  label: string;
+  title: string;
+  lede?: string;
+  breadcrumbs?: { name: string; href: string }[];
+}
+
+const { label, title, lede, breadcrumbs = [] } = Astro.props;
+---
+
+<header class="page-header">
+  <div class="frame">
+    {
+      breadcrumbs.length > 0 && (
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/">Home</a></li>
+            {breadcrumbs.map((crumb, i) => (
+              <li>
+                {i === breadcrumbs.length - 1 ? (
+                  <span aria-current="page">{crumb.name}</span>
+                ) : (
+                  <a href={crumb.href}>{crumb.name}</a>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+
+    <SectionLabel text={label} />
+    <h1>{title}</h1>
+    {lede && <p class="lede">{lede}</p>}
+  </div>
+</header>
+
+<style>
+  .page-header {
+    background:
+      radial-gradient(110% 120% at 12% 20%, #22332e 0%, var(--green-deep) 55%, var(--ink) 100%);
+    color: var(--text-on-dark);
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem) clamp(3rem, 2rem + 4vw, 5.5rem);
+  }
+
+  .crumbs {
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-small);
+    color: var(--text-on-dark-muted);
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 0.5rem;
+    color: var(--rule-on-dark);
+  }
+
+  .crumbs a:hover,
+  .crumbs a:focus-visible {
+    color: var(--orange);
+  }
+
+  h1 {
+    font-size: var(--fs-h1);
+    max-width: 18ch;
+  }
+
+  .lede {
+    margin-top: 1.75rem;
+    max-width: 58ch;
+    font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+    line-height: 1.75;
+    color: var(--text-on-dark-muted);
+  }
+</style>

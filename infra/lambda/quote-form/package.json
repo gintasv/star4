@@ -1,0 +1,6 @@
+{
+  "_comment": "Scopes this directory to CommonJS. The repo root sets type=module, which would otherwise make Node load index.js as ESM locally and break `require`. In Lambda the inlined code lands as index.js with no package.json alongside it, so the runtime already treats it as CommonJS - this file only makes local execution match production. It is not deployed.",
+  "name": "star4-quote-form",
+  "private": true,
+  "type": "commonjs"
+}

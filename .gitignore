@@ -1,0 +1,27 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# local environment + deploy config (contains account ids)
+.env
+.env.*
+!.env.example
+infra/deploy.config.json
+infra/site-stack.generated.yaml
+infra/inventory-*.json
+
+# dev artefacts
+shots/
+
+# --- Deliberately kept out of the public repository ------------------------
+# The raw photo archive: 45 photographs of customers' homes, most of them
+# mid-job records showing belongings and interiors. Only the images chosen for
+# the live site are committed, and those live under src/content/projects/.
+# Keep this folder local and back it up somewhere private.
+Project Photos/
+
+# Belongs to the invoicemanagementsystem.com project, not this one.
+design/test1.pdf

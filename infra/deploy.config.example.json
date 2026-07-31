@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy to deploy.config.json and fill in the real values. That copy is gitignored. provision.ps1 and deploy.ps1 both refuse to run if the caller's AWS account does not match AccountId, and provision.ps1 additionally verifies HostedZoneId really belongs to DomainName before writing any DNS record.",
+
+  "_AccountId_comment": "Your 12-digit AWS account ID. Kept out of this public example on purpose - `aws sts get-caller-identity` prints it.",
+  "AccountId": "000000000000",
+  "Region": "us-east-1",
+
+  "StackName": "star4-construction-site",
+  "BucketPrefix": "star4-construction-site",
+
+  "DomainName": "star4construction.com",
+  "_HostedZoneId_comment": "The EXISTING zone for DomainName. Read it from `infra/inventory-before.json` after running inventory.ps1. Never create a second zone for the same domain.",
+  "HostedZoneId": "ZXXXXXXXXXXXXXXXXXXXX",
+
+  "_NotifyEmail_comment": "Where quote-form submissions are delivered, and where DMARC reports go. Must be verified in SES while the account is in the sending sandbox.",
+  "NotifyEmail": "star4constructionteam@gmail.com"
+}

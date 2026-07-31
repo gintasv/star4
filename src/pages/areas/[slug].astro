@@ -1,0 +1,343 @@
+---
+import { getPublishedProjects } from '../../lib/projects';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import ContactButtons from '../../components/ContactButtons.astro';
+import FaqAccordion from '../../components/FaqAccordion.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { areas } from '../../data/areas';
+import { services, getService } from '../../data/services';
+import { site } from '../../data/site';
+import { faqSchema } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return areas.map((area) => ({
+    params: { slug: area.slug },
+    props: { area },
+  }));
+}
+
+const { area } = Astro.props;
+
+// Services called out as most relevant to this town lead; the rest follow.
+const focusServices = area.focus.map((slug) => getService(slug)).filter((s) => s !== undefined);
+const otherServices = services.filter((s) => !area.focus.includes(s.slug));
+
+const projects = (await getPublishedProjects((p) => p.data.area === area.slug)).slice(0, 3);
+
+// Two locally-worded questions, so this page carries FAQ markup of its own
+// rather than duplicating the sitewide set.
+const localFaqs = [
+  {
+    q: `Do you charge extra to travel to ${area.name}?`,
+    a: `No. ${area.name} is inside our regular working area — we are based in ${site.address.locality}, and travel within the western and southwest suburbs is not billed separately. What you are quoted is for the work itself.`,
+  },
+  {
+    q: `How soon could you look at a job in ${area.name}?`,
+    a: `It depends on what is already scheduled, but because ${area.name} is local we can usually arrange to see a job without a long wait. Call ${site.contactName} at ${site.phone} and you will get a straight answer on timing rather than a placeholder date.`,
+  },
+];
+---
+
+<BaseLayout
+  title={area.metaTitle}
+  description={area.metaDescription}
+  canonical={`/areas/${area.slug}/`}
+  breadcrumbs={[
+    { name: 'Service areas', href: '/areas/' },
+    { name: area.name, href: `/areas/${area.slug}/` },
+  ]}
+  schemas={[faqSchema(localFaqs)]}
+>
+  <PageHeader
+    label={`${area.county} · ${area.postalCodes.join(', ')}`}
+    title={`Flooring & stair contractor in ${area.name}`}
+    breadcrumbs={[
+      { name: 'Service areas', href: '/areas/' },
+      { name: area.name, href: `/areas/${area.slug}/` },
+    ]}
+  />
+
+  {/* --- Local detail ------------------------------------------------------ */}
+  <section class="section local">
+    <div class="frame local-grid">
+      <div class="local-body">
+        {area.body.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+
+      <aside class="local-aside">
+        <p class="aside-label">Talk to {site.contactName}</p>
+        <p class="aside-text">
+          One direct point of contact for {area.name} projects — no call centre,
+          no handoffs.
+        </p>
+        <ContactButtons tone="on-light" class="aside-buttons" />
+      </aside>
+    </div>
+  </section>
+
+  {/* --- Services here ----------------------------------------------------- */}
+  <section class="section services">
+    <div class="frame">
+      <SectionHead
+        label={`Services in ${area.name}`}
+        surface="light"
+        lede={`The work most often requested in ${area.name}, though we take on the full range across every town we cover.`}
+      >
+        What we do here.
+      </SectionHead>
+
+      <ul class="cards">
+        {
+          focusServices.map((service) => (
+            <li>
+              <a href={`/services/${service.slug}/`}>
+                <h3>{service.name}</h3>
+                <p>{service.summary}</p>
+                <span class="cue">
+                  {service.name} in {area.name} <span aria-hidden="true">↗</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="also">
+        Also available in {area.name}:{' '}
+        {
+          otherServices.map((service, i) => (
+            <>
+              {i > 0 && ', '}
+              <a href={`/services/${service.slug}/`}>{service.name.toLowerCase()}</a>
+            </>
+          ))
+        }.
+      </p>
+    </div>
+  </section>
+
+  {/* --- Local projects ---------------------------------------------------- */}
+  {
+    projects.length > 0 && (
+      <section class="section work">
+        <div class="frame">
+          <SectionHead label="Recent work" lede={`Projects completed in and around ${area.name}.`}>
+            Done nearby.
+          </SectionHead>
+          <ProjectGrid projects={projects} />
+        </div>
+      </section>
+    )
+  }
+
+  {/* --- Local FAQ --------------------------------------------------------- */}
+  <section class="section faq">
+    <div class="frame faq-grid">
+      <SectionHead label="Good to know" surface="light" class="faq-head">
+        Working in {area.name}.
+      </SectionHead>
+      <FaqAccordion items={localFaqs} openFirst />
+    </div>
+  </section>
+
+  {/* --- Nearby ------------------------------------------------------------ */}
+  <section class="section nearby">
+    <div class="frame">
+      <h2 class="nearby-title">Other areas we cover</h2>
+      <ul class="nearby-links">
+        {
+          areas
+            .filter((a) => a.slug !== area.slug)
+            .map((a) => (
+              <li>
+                <a href={`/areas/${a.slug}/`}>{a.name}</a>
+              </li>
+            ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand
+    label={`${area.name}, Illinois`}
+    heading={`Get your ${area.name} project moving.`}
+  />
+</BaseLayout>
+
+<style>
+  .local {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .local-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+    align-items: start;
+  }
+
+  .local-body p {
+    font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+    line-height: 1.8;
+    max-width: 62ch;
+  }
+
+  .local-body p + p {
+    margin-top: 1.5rem;
+  }
+
+  .local-aside {
+    background: var(--sand);
+    border-top: var(--rule-accent) solid var(--terracotta);
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2rem);
+  }
+
+  .aside-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--accent-text);
+  }
+
+  .aside-text {
+    margin-top: 0.85rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+  }
+
+  .local-aside :global(.aside-buttons) {
+    margin-top: 1.5rem;
+  }
+
+  /* --- Services ---------------------------------------------------------- */
+  .services {
+    background: var(--bone);
+    color: var(--text-on-light);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1px;
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .cards a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2rem);
+    background: var(--cream);
+    box-shadow:
+      1px 0 0 var(--rule-on-light),
+      0 1px 0 var(--rule-on-light);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .cards a:hover,
+  .cards a:focus-visible {
+    background: #fff;
+  }
+
+  .cards h3 {
+    font-size: var(--fs-h4);
+  }
+
+  .cards p {
+    margin-top: 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--text-on-light-muted);
+  }
+
+  .cue {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-text);
+  }
+
+  .also {
+    margin-top: 2rem;
+    font-size: 0.9375rem;
+    color: var(--text-on-light-muted);
+  }
+
+  .also a {
+    color: var(--accent-text);
+    border-bottom: 1px solid currentColor;
+  }
+
+  /* --- Work / FAQ / nearby ----------------------------------------------- */
+  .work {
+    background: var(--ink);
+    color: var(--text-on-dark);
+  }
+
+  .faq {
+    background: var(--sage-light);
+    color: var(--text-on-light);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+
+  .faq-grid :global(.faq-head) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+
+  .nearby {
+    background: var(--cream);
+    color: var(--text-on-light);
+  }
+
+  .nearby-title {
+    font-size: var(--fs-h4);
+    margin-bottom: 1.5rem;
+  }
+
+  .nearby-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .nearby-links a {
+    display: block;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--rule-on-light);
+    font-size: var(--fs-small);
+    font-weight: 600;
+    transition:
+      background-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .nearby-links a:hover,
+  .nearby-links a:focus-visible {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: var(--cream);
+  }
+
+  @media (max-width: 60rem) {
+    .local-grid,
+    .faq-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

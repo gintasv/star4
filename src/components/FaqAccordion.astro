@@ -1,0 +1,111 @@
+---
+import type { Faq } from '../data/faqs';
+
+/**
+ * Built on native <details>/<summary>: no JavaScript, keyboard accessible for
+ * free, and the answer text stays in the DOM so crawlers read it whether the
+ * panel is open or not.
+ */
+interface Props {
+  items: Faq[];
+  /** Open the first item so the pattern is obvious at a glance. */
+  openFirst?: boolean;
+}
+
+const { items, openFirst = false } = Astro.props;
+---
+
+<div class="faq">
+  {
+    items.map((item, i) => (
+      <details class="item" open={openFirst && i === 0}>
+        <summary>
+          <span class="q">{item.q}</span>
+          <span class="icon" aria-hidden="true" />
+        </summary>
+        <div class="a">
+          <p>{item.a}</p>
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    background: var(--cream);
+    border-top: var(--rule-accent) solid var(--terracotta);
+  }
+
+  .item + .item {
+    border-top: 1px solid var(--rule-on-light);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.15rem, 0.9rem + 0.9vw, 1.6rem) clamp(1.35rem, 1rem + 1.2vw, 2rem);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .q {
+    font-size: clamp(0.9375rem, 0.85rem + 0.5vw, 1.2rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--text-on-light);
+    text-wrap: balance;
+  }
+
+  summary:hover .q,
+  summary:focus-visible .q {
+    color: var(--accent-text);
+  }
+
+  /* Plus sign drawn from two bars; the vertical one collapses when open. */
+  .icon {
+    position: relative;
+    width: 0.85rem;
+    height: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .icon::before,
+  .icon::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 2px;
+    background: var(--terracotta);
+    translate: 0 -50%;
+    transition: rotate 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+
+  .icon::after {
+    rotate: 90deg;
+  }
+
+  .item[open] .icon::after {
+    rotate: 0deg;
+    opacity: 0;
+  }
+
+  .a {
+    padding: 0 clamp(1.35rem, 1rem + 1.2vw, 2rem) clamp(1.35rem, 1rem + 1.2vw, 1.85rem);
+  }
+
+  .a p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--text-on-light-muted);
+    max-width: 62ch;
+  }
+</style>

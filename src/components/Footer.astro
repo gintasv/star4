@@ -1,0 +1,158 @@
+---
+import { site, formatAddress } from '../data/site';
+import { services } from '../data/services';
+import { areas } from '../data/areas';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="frame">
+    {/* Link columns give crawlers a route to every service and area page from
+        any page on the site, which matters for pages the nav does not reach. */}
+    <div class="columns">
+      <div class="col col-brand">
+        <p class="wordmark">{site.wordmark}</p>
+        <p class="blurb">Flooring, stairs, railings, and home improvement.</p>
+      </div>
+
+      <nav class="col" aria-labelledby="footer-services">
+        <h2 class="col-title" id="footer-services">Services</h2>
+        <ul>
+          {
+            services.map((s) => (
+              <li>
+                <a href={`/services/${s.slug}/`}>{s.name}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav class="col col-areas" aria-labelledby="footer-areas">
+        <h2 class="col-title" id="footer-areas">Service areas</h2>
+        <ul class="areas-list">
+          {
+            areas.map((a) => (
+              <li>
+                <a href={`/areas/${a.slug}/`}>{a.name}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="col">
+        <h2 class="col-title">Contact</h2>
+        <ul>
+          <li><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        </ul>
+        <address class="address">
+          {formatAddress()}<br />
+          Serving Chicago &amp; nearby suburbs
+        </address>
+      </div>
+    </div>
+
+    <div class="baseline">
+      <p>Copyright {year} {site.name}</p>
+      <p><a href="/faq/">Common questions</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--ink);
+    color: var(--text-on-dark);
+    padding-block: clamp(3rem, 1.5rem + 4vw, 4.5rem) 2rem;
+    font-size: var(--fs-small);
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.2fr 1.2fr;
+    gap: clamp(2rem, 1rem + 3vw, 4rem);
+    padding-bottom: 2.5rem;
+  }
+
+  .wordmark {
+    font-size: clamp(1.05rem, 0.9rem + 0.7vw, 1.35rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    line-height: 1.1;
+  }
+
+  .blurb {
+    color: var(--text-on-dark-muted);
+    margin-top: 0.75rem;
+    max-width: 22ch;
+  }
+
+  .col-title {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--orange);
+    margin-bottom: 1rem;
+  }
+
+  .col ul {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  /* Twelve towns in one column is too tall; two columns keeps it compact. */
+  .areas-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+  }
+
+  .col a {
+    color: var(--text-on-dark-muted);
+    transition: color 0.15s var(--ease);
+  }
+
+  .col a:hover,
+  .col a:focus-visible {
+    color: var(--orange);
+  }
+
+  .address {
+    font-style: normal;
+    color: var(--text-on-dark-muted);
+    margin-top: 1.25rem;
+    line-height: 1.7;
+  }
+
+  .baseline {
+    border-top: 1px solid var(--rule-on-dark);
+    padding-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--text-on-dark-muted);
+  }
+
+  .baseline a:hover,
+  .baseline a:focus-visible {
+    color: var(--orange);
+  }
+
+  @media (max-width: 60rem) {
+    .columns {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 34rem) {
+    .columns {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.25rem;
+    }
+  }
+</style>

@@ -1,0 +1,32 @@
+{
+  "name": "star4construction",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "new-project": "node scripts/new-project.mjs",
+    "audit": "node scripts/audit.mjs",
+    "contrast": "node scripts/contrast.mjs",
+    "shoot": "node scripts/shoot.mjs",
+    "lh": "node scripts/lh.mjs",
+    "test": "node --test infra/lambda/quote-form/index.test.mjs",
+    "build-template": "node infra/build-template.mjs",
+    "verify": "astro build && node scripts/contrast.mjs && node scripts/audit.mjs && node --test infra/lambda/quote-form/index.test.mjs",
+    "deploy": "npm run verify && powershell -NoProfile -ExecutionPolicy Bypass -File infra/deploy.ps1"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/inter": "^5.3.0",
+    "astro": "^7.1.6",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "lighthouse": "^13.4.1",
+    "puppeteer-core": "^25.4.0"
+  }
+}

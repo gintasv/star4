@@ -1,0 +1,53 @@
+---
+/**
+ * The recurring micro-label from the design: a short rule followed by
+ * letterspaced uppercase text. Appears above nearly every section heading.
+ *
+ * The prop names the SURFACE the label sits on, not a colour, because the two
+ * accents are not interchangeable: --orange clears 4.5:1 only on the dark
+ * greens, and --accent-text only on the light neutrals. Naming the surface
+ * makes the right choice the obvious one and keeps callers from picking a
+ * colour that quietly fails contrast.
+ */
+interface Props {
+  text: string;
+  surface?: 'dark' | 'light';
+  class?: string;
+}
+
+const { text, surface = 'dark', class: className } = Astro.props;
+---
+
+<p class:list={['section-label', `on-${surface}`, className]}>
+  <span class="rule" aria-hidden="true"></span>
+  {text}
+</p>
+
+<style>
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+
+  .on-dark {
+    color: var(--orange);
+  }
+
+  .on-light {
+    color: var(--accent-text);
+  }
+
+  .rule {
+    width: 28px;
+    height: 2px;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+</style>

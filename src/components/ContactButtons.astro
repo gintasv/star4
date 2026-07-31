@@ -1,0 +1,116 @@
+---
+import { site } from '../data/site';
+
+/**
+ * The paired call / email buttons from the design: a filled terracotta block
+ * and an outlined block, each with a small uppercase label above the value.
+ */
+interface Props {
+  /** Outlined buttons read better on dark backgrounds. */
+  tone?: 'on-dark' | 'on-light';
+  class?: string;
+}
+
+const { tone = 'on-dark', class: className } = Astro.props;
+---
+
+<div class:list={['contact-buttons', tone, className]}>
+  <a class="btn btn-solid" href={`tel:${site.phoneHref}`}>
+    <span class="btn-label">Call {site.contactName}</span>
+    <span class="btn-value">{site.phone}</span>
+  </a>
+
+  <a class="btn btn-outline" href={`mailto:${site.email}`}>
+    <span class="btn-label">Email for an estimate</span>
+    <span class="btn-value btn-value--email">{site.email}</span>
+  </a>
+</div>
+
+<style>
+  .contact-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 1.1rem 1.5rem;
+    min-height: 4.75rem;
+    transition:
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+
+  .btn-label {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    line-height: 1;
+  }
+
+  .btn-value {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* The address is long and these buttons sit in narrow sidebars as well as
+     full-width rows, so size it to fit the tightest case rather than let it
+     break mid-domain. */
+  .btn-value--email {
+    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
+    overflow-wrap: anywhere;
+  }
+
+  .btn-solid {
+    background: var(--terracotta);
+    color: var(--cream);
+    flex: 0 1 auto;
+  }
+
+  .btn-solid:hover,
+  .btn-solid:focus-visible {
+    background: #c25f2c;
+  }
+
+  .btn-outline {
+    flex: 1 1 16rem;
+  }
+
+  /* On dark surfaces the outline is a hairline in the cream text colour. */
+  .on-dark .btn-outline {
+    border: 1px solid var(--rule-on-dark);
+    color: var(--text-on-dark);
+  }
+  .on-dark .btn-outline .btn-label {
+    color: var(--text-on-dark);
+  }
+  .on-dark .btn-outline:hover,
+  .on-dark .btn-outline:focus-visible {
+    background: rgba(254, 248, 239, 0.07);
+  }
+
+  .on-light .btn-outline {
+    border: 1px solid var(--rule-on-light);
+    color: var(--text-on-light);
+  }
+  .on-light .btn-outline:hover,
+  .on-light .btn-outline:focus-visible {
+    background: rgba(20, 32, 28, 0.04);
+  }
+
+  @media (max-width: 30rem) {
+    .contact-buttons {
+      flex-direction: column;
+    }
+    .btn-solid,
+    .btn-outline {
+      flex: 1 1 auto;
+    }
+  }
+</style>
