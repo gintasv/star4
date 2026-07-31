@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import { Image } from 'astro:assets';
 import type { PublishedProject } from '../lib/projects';
 
@@ -33,7 +34,7 @@ const useMosaic = shown.length % 4 === 1 && shown.length >= 5;
   {
     shown.map((project, i) => (
       <li class:list={['tile', { 'tile-lead': useMosaic && i === 0 }]}>
-        <a href={`/projects/${project.id}/`}>
+        <a href={url(`/projects/${project.id}/`)}>
           <Image
             src={project.data.cover}
             alt={project.data.coverAlt}

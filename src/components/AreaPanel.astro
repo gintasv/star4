@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import { areas } from '../data/areas';
 
 /**
@@ -15,7 +16,7 @@ import { areas } from '../data/areas';
     {
       areas.map((area) => (
         <li>
-          <a href={`/areas/${area.slug}/`}>
+          <a href={url(`/areas/${area.slug}/`)}>
             <span class="dot" aria-hidden="true"></span>
             {area.name}
           </a>

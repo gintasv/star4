@@ -9,6 +9,7 @@
 import { site } from '../data/site';
 import { areas } from '../data/areas';
 import { services } from '../data/services';
+import { url } from './url';
 
 /** Stable @id for the business node so other nodes can reference it. */
 export const businessId = (origin: string) => `${origin}/#business`;
@@ -24,10 +25,10 @@ export function localBusinessSchema(origin: string) {
     legalName: site.legalName,
     description:
       'Flooring, stair, railing and finish carpentry contractor serving Chicago’s western and southwest suburbs.',
-    url: `${origin}/`,
+    url: `${origin}${url('/')}`,
     telephone: site.phoneHref,
     email: site.email,
-    image: `${origin}${site.defaultOgImage}`,
+    image: `${origin}${url(site.defaultOgImage)}`,
     priceRange: '$$',
 
     address: {
@@ -81,7 +82,7 @@ export function localBusinessSchema(origin: string) {
           '@type': 'Service',
           name: s.name,
           description: s.summary,
-          url: `${origin}/services/${s.slug}/`,
+          url: `${origin}${url(`/services/${s.slug}/`)}`,
         },
       })),
     },
@@ -107,7 +108,7 @@ export function serviceSchema(
     '@type': 'Service',
     name: service.name,
     description: service.summary,
-    url: `${origin}/services/${service.slug}/`,
+    url: `${origin}${url(`/services/${service.slug}/`)}`,
     serviceType: service.name,
     provider: { '@id': businessId(origin) },
     areaServed: areas.map((a) => ({ '@type': 'City' as const, name: a.name, addressRegion: 'IL' })),
@@ -134,7 +135,7 @@ export function breadcrumbSchema(origin: string, trail: { name: string; href: st
       '@type': 'ListItem',
       position: i + 1,
       name: crumb.name,
-      item: `${origin}${crumb.href}`,
+      item: `${origin}${url(crumb.href)}`,
     })),
   };
 }

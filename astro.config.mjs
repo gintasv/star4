@@ -8,8 +8,16 @@ import sitemap from '@astrojs/sitemap';
  */
 const SITE_URL = process.env.SITE_URL ?? 'https://star4construction.com';
 
+/**
+ * Sub-path the site is served from. Empty for the real deployment, which sits
+ * at the domain root; "/star4" for the GitHub Pages preview, which is served
+ * from a repository sub-path. See src/lib/url.ts.
+ */
+const BASE_PATH = process.env.BASE_PATH || undefined;
+
 export default defineConfig({
   site: SITE_URL,
+  base: BASE_PATH,
 
   // Directory-style URLs (/services/stairs/) keep paths clean and stable.
   // The CloudFront function in infra/site-stack.yaml rewrites these to

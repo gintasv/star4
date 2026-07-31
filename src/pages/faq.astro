@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import SectionHead from '../components/SectionHead.astro';
@@ -46,7 +47,7 @@ const allFaqs = [...faqs, ...services.flatMap((s) => s.faqs)];
             {service.title}
           </SectionHead>
           <FaqAccordion items={service.faqs} />
-          <a class="more" href={`/services/${service.slug}/`}>
+          <a class="more" href={url(`/services/${service.slug}/`)}>
             More on {service.name.toLowerCase()} <span aria-hidden="true">↗</span>
           </a>
         </div>

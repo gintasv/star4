@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import { getPublishedProjects } from '../../lib/projects';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
@@ -98,7 +99,7 @@ const origin = Astro.site?.origin ?? 'https://star4construction.com';
         {
           areas.map((area) => (
             <li>
-              <a href={`/areas/${area.slug}/`}>
+              <a href={url(`/areas/${area.slug}/`)}>
                 {service.name} in {area.name}
               </a>
             </li>
@@ -130,7 +131,7 @@ const origin = Astro.site?.origin ?? 'https://star4construction.com';
         {
           otherServices.map((s) => (
             <li>
-              <a href={`/services/${s.slug}/`}>
+              <a href={url(`/services/${s.slug}/`)}>
                 <span class="other-name">{s.name}</span>
                 <span class="other-summary">{s.summary}</span>
               </a>

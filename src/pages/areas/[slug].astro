@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import { getPublishedProjects } from '../../lib/projects';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
@@ -93,7 +94,7 @@ const localFaqs = [
         {
           focusServices.map((service) => (
             <li>
-              <a href={`/services/${service.slug}/`}>
+              <a href={url(`/services/${service.slug}/`)}>
                 <h3>{service.name}</h3>
                 <p>{service.summary}</p>
                 <span class="cue">
@@ -111,7 +112,7 @@ const localFaqs = [
           otherServices.map((service, i) => (
             <>
               {i > 0 && ', '}
-              <a href={`/services/${service.slug}/`}>{service.name.toLowerCase()}</a>
+              <a href={url(`/services/${service.slug}/`)}>{service.name.toLowerCase()}</a>
             </>
           ))
         }.
@@ -153,7 +154,7 @@ const localFaqs = [
             .filter((a) => a.slug !== area.slug)
             .map((a) => (
               <li>
-                <a href={`/areas/${a.slug}/`}>{a.name}</a>
+                <a href={url(`/areas/${a.slug}/`)}>{a.name}</a>
               </li>
             ))
         }

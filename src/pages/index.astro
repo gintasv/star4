@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import { getPublishedProjects } from '../lib/projects';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
@@ -59,7 +60,7 @@ const differentiators = [
           from this link, the footer, and every area page. */}
       <ServiceCards limit={3} />
 
-      <a class="services-link" href="/services/">
+      <a class="services-link" href={url('/services/')}>
         All five services <span aria-hidden="true">↗</span>
       </a>
     </div>
@@ -83,7 +84,7 @@ const differentiators = [
           home-improvement projects.
         </p>
 
-        <a class="areas-link" href="/areas/">See every area we cover</a>
+        <a class="areas-link" href={url('/areas/')}>See every area we cover</a>
       </div>
 
       <AreaPanel />
@@ -115,7 +116,7 @@ const differentiators = [
         projects.length > 0 ? (
           <>
             <ProjectGrid projects={projects} limit={5} />
-            <a class="work-link" href="/projects/">
+            <a class="work-link" href={url('/projects/')}>
               View all projects <span aria-hidden="true">↗</span>
             </a>
           </>

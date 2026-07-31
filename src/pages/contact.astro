@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import SectionHead from '../components/SectionHead.astro';
@@ -66,7 +67,7 @@ import { site, formatAddress } from '../data/site';
           <div>
             <dt>Serving</dt>
             <dd>
-              <a href="/areas/">Chicago's western &amp; southwest suburbs</a>
+              <a href={url('/areas/')}>Chicago's western &amp; southwest suburbs</a>
             </dd>
           </div>
         </dl>

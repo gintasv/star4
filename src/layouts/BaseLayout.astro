@@ -1,4 +1,5 @@
 ---
+import { url, isPreview } from '../lib/url';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -32,8 +33,19 @@ const {
 } = Astro.props;
 
 const origin = Astro.site?.origin ?? 'https://star4construction.com';
-const canonicalUrl = new URL(canonical ?? Astro.url.pathname, origin).href;
-const ogImageUrl = new URL(ogImage, origin).href;
+
+// canonical is passed as a root-relative path; Astro.url.pathname already
+// carries the base. Route both through url() so neither doubles nor drops it.
+const canonicalPath = canonical ? url(canonical) : Astro.url.pathname;
+const canonicalUrl = new URL(canonicalPath, origin).href;
+const ogImageUrl = new URL(url(ogImage), origin).href;
+
+/**
+ * Preview builds carry noindex on every page. Without it the GitHub Pages copy
+ * would be a second indexable version of the whole site, competing with
+ * star4construction.com for the searches this build exists to win.
+ */
+const suppressIndexing = noindex || isPreview;
 
 // The business node appears on every page; it is the anchor other nodes
 // reference by @id.
@@ -55,13 +67,13 @@ if (breadcrumbs.length > 0) {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {suppressIndexing && <meta name="robots" content="noindex, nofollow" />}
 
     {/* Preloading the one variable font removes it from the critical path and
         keeps the heavy display headings from flashing in a fallback face. */}
     <link
       rel="preload"
-      href="/fonts/inter-latin-wght-normal.woff2"
+      href={url('/fonts/inter-latin-wght-normal.woff2')}
       as="font"
       type="font/woff2"
       crossorigin
@@ -81,8 +93,8 @@ if (breadcrumbs.length > 0) {
 
     <meta name="theme-color" content="#141a1b" />
     <meta name="format-detection" content="telephone=yes" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
 
     {
       allSchemas.map((schema) => (

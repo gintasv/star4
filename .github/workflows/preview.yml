@@ -1,0 +1,65 @@
+name: Preview to GitHub Pages
+
+# Builds the site and publishes it to GitHub Pages as a shareable preview.
+#
+# This is NOT the production deployment. The real site goes to S3 + CloudFront
+# on star4construction.com via infra/deploy.ps1. Every page built here carries
+# noindex and robots.txt disallows everything, so this copy can never compete
+# with the real domain in search results.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push supersedes one still running.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Same checks that gate a production deploy: contrast, the 30-page SEO
+      # audit, and the quote-form handler tests.
+      - name: Verify
+        run: npm run verify
+
+      - name: Build preview
+        run: npx astro build
+        env:
+          # Pages serves this repo from a sub-path, hence BASE_PATH.
+          SITE_URL: https://gintasv.github.io
+          BASE_PATH: /star4
+          PUBLIC_PREVIEW: 'true'
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

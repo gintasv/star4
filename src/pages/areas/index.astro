@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import CtaBand from '../../components/CtaBand.astro';
@@ -25,7 +26,7 @@ import { site } from '../../data/site';
         {
           areas.map((area) => (
             <li>
-              <a href={`/areas/${area.slug}/`}>
+              <a href={url(`/areas/${area.slug}/`)}>
                 <span class="county">{area.county}</span>
                 <h2>{area.name}</h2>
                 <p>{area.summary}</p>

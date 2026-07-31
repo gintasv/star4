@@ -1,14 +1,20 @@
 ---
+import { url } from '../lib/url';
 import { site, nav } from '../data/site';
 
 const path = Astro.url.pathname;
-/** A nav item is active for its own page and anything beneath it. */
-const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+/**
+ * A nav item is active for its own page and anything beneath it. Compared
+ * against url(href) because Astro.url.pathname already carries the base path,
+ * so a bare "/services/" would never match under a sub-path deployment.
+ */
+const isActive = (href: string) =>
+  href === '/' ? path === url('/') : path.startsWith(url(href));
 ---
 
 <header class="site-header">
   <div class="bar">
-    <a class="brand" href="/">
+    <a class="brand" href={url('/')}>
       <span class="brand-text">
         <span class="wordmark">{site.wordmark}</span>
         <span class="tagline">{site.tagline}</span>
@@ -21,7 +27,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
           nav.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={url(item.href)}
                 class:list={['nav-link', { active: isActive(item.href) }]}
                 aria-current={isActive(item.href) ? 'page' : undefined}
               >

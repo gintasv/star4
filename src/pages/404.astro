@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { services } from '../data/services';
@@ -22,7 +23,7 @@ import { site } from '../data/site';
         {
           services.map((service) => (
             <li>
-              <a href={`/services/${service.slug}/`}>
+              <a href={url(`/services/${service.slug}/`)}>
                 <span class="name">{service.name}</span>
                 <span class="text">{service.summary}</span>
               </a>
@@ -30,13 +31,13 @@ import { site } from '../data/site';
           ))
         }
         <li>
-          <a href="/projects/">
+          <a href={url('/projects/')}>
             <span class="name">Completed work</span>
             <span class="text">Flooring, stair and railing projects across the Chicago area.</span>
           </a>
         </li>
         <li>
-          <a href="/areas/">
+          <a href={url('/areas/')}>
             <span class="name">Service areas</span>
             <span class="text">The towns we cover across the western and southwest suburbs.</span>
           </a>
