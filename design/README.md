@@ -100,11 +100,7 @@ preceded by a short rule.
 
 ## Note on `test1.pdf`
 
-**This file appears to belong to a different project.** Its embedded title is
-"IMS Look-and-Feel Design", and the pages show invoice statements, interchange
-fees and vendor contracts — it is a design document for
-**invoicemanagementsystem.com**, which is the other site in the same AWS
-account.
-
-It was moved here only to clear the project root. It has nothing to do with
-Star 4 Construction and can be relocated to the IMS project whenever suits.
+**This file belongs to a different project.** It was moved here only to clear
+the project root, has nothing to do with Star 4 Construction, and is excluded
+from the repository (see `.gitignore`), so it will not be present in a fresh
+clone. It can be relocated to its own project whenever suits.

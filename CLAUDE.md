@@ -128,8 +128,8 @@ strips EXIF, so capture times and GPS never reach the published site.
 
 ## AWS: the account is shared
 
-**This AWS account also hosts invoicemanagementsystem.com.** Nothing here may
-modify or delete a resource it did not create.
+**This AWS account also hosts other websites.** Nothing here may modify or
+delete a resource it did not create.
 
 - `infra/inventory.ps1` is read-only (List/Describe/Get only). Snapshot before
   provisioning and diff after; the diff must show additions only, all named `star4-*`.
@@ -165,5 +165,5 @@ The quote form renders call/email buttons instead of a form when
 ## What is deliberately not in the repo
 
 `Project Photos/` (45 originals, mostly unpublished photographs of customers'
-homes) and `design/test1.pdf` (belongs to the invoicemanagementsystem.com
-project). Both are gitignored because `gintasv/star4` is public. Keep it that way.
+homes) and `design/test1.pdf` (belongs to an unrelated project). Both are
+gitignored because `gintasv/star4` is public. Keep it that way.

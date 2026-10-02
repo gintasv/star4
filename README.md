@@ -198,8 +198,8 @@ npm run deploy
 
 ## AWS layout, and why it is careful
 
-**This AWS account also hosts invoicemanagementsystem.com.** Everything here is
-built so it cannot affect it.
+**This AWS account also hosts other websites.** Everything here is built so it
+cannot affect them.
 
 ```
 star4-construction-dns          ACM certificate (apex + www)
